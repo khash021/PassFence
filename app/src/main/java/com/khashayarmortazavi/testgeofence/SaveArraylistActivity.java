@@ -1,6 +1,5 @@
 package com.khashayarmortazavi.testgeofence;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,14 +10,7 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import java.util.ArrayList;
-import java.util.List;
-
-import static com.khashayarmortazavi.testgeofence.MainActivity.MY_PREF_ARRAY_KEY;
-import static com.khashayarmortazavi.testgeofence.MainActivity.MY_PREF_NAME;
 
 public class SaveArraylistActivity extends AppCompatActivity {
 
@@ -49,9 +41,10 @@ public class SaveArraylistActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                saveData();
-                ArrayList<String> list = new ArrayList<>();
-                list.add(input.getText().toString());
+                //create a test Fence object and add it to array list
+                Fence fence = new Fence ("Test", 49.235675, -123.057118, 100, 3600000, Fence.FENCE_TYPE_ENTER_EXIT);
+                ArrayList<Fence> list = new ArrayList<>();
+                list.add(fence);
                 MainActivity.saveArrayList(getApplicationContext(), list);
             }
         });
@@ -59,24 +52,22 @@ public class SaveArraylistActivity extends AppCompatActivity {
         loadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                loadData();
-                output.setText("");
-                ArrayList<String> out = MainActivity.loadArrayList(getApplicationContext());
-
-                if (out != null) {
-                    for (String item : out) {
-                        output.append("\n" + item);
-                    }
-                }
-
+                ArrayList<Fence> list = MainActivity.loadArrayList(getApplicationContext());
+                if (list == null) {
+                    output.setText("Empty");
+                } else {
+                    output.setText("");
+                    for (Fence item : list) {
+                        output.append(item.getCompleteFenceInfo());
+                    }//for
+                }//if
             }
         });
 
         eraseAllButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                removeAll();
-
+                MainActivity.eraseAllArrays(getApplicationContext());
             }
         });
 
@@ -102,47 +93,6 @@ public class SaveArraylistActivity extends AppCompatActivity {
 
 
     }//onCreate
-
-
-    private void saveData() {
-        inputList.add("Khash");
-        inputList.add("HQ");
-        inputList.add(input.getText().toString());
-
-        shref = this.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
-
-        Gson gson = new Gson();
-
-        String json = gson.toJson(inputList);
-
-        editor = shref.edit();
-        editor.remove(MY_PREF_ARRAY_KEY).apply();
-        editor.putString(MY_PREF_ARRAY_KEY, json);
-        editor.apply();
-
-
-    }//saveData
-
-    private void loadData() {
-
-        Gson gson = new Gson();
-        shref = this.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
-        String response = shref.getString(MY_PREF_ARRAY_KEY, "");
-        ArrayList<String> loadedList = gson.fromJson(response,
-                new TypeToken<List<String>>(){}.getType());
-
-        for (String item : loadedList) {
-            output.append("\n" + item);
-        }
-
-    }//loadData
-
-    private void removeAll() {
-        shref = this.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
-
-        editor = shref.edit();
-        editor.remove(MY_PREF_ARRAY_KEY).apply();
-    }//removeAll
 
 
 }//Class

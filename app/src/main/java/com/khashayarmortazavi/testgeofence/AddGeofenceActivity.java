@@ -2,18 +2,17 @@ package com.khashayarmortazavi.testgeofence;
 
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.SeekBar;
 import android.widget.Toast;
@@ -39,13 +38,12 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, OnMapReadyCallback,
         GoogleMap.OnCameraIdleListener {
 
-    private static final String TAG = "Activity 2";
+    private static final String TAG = AddGeofenceActivity.class.getSimpleName();
     private static final long GEOFENCE_DURATION_MILLISEC = 43200000; //12 hours in millisec
 
 
@@ -62,6 +60,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     //geofence stuff
     private float mRadius;
     private long mDuration;
+    private EditText mNameText;
 
     final String[] RADIUS_ENTRIES = {"5", "10", "25", "50", "100", "500", "1000"};
     final String[] DURATION_ENTRIES = {"1", "2", "3", "5", "10", "12", "24", "never"};
@@ -116,6 +115,8 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 //            }
 //        });//removeGeofenceButton
 
+        mNameText = findViewById(R.id.text_name);
+
         //default values
         mRadius = 50;
         //(-1 is never)
@@ -162,7 +163,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 //        //build geofence
 //        buildGeofence();
 
-        populateGeofenceIdList();
+//        populateGeofenceIdList();
 
         SeekBar seekBar = findViewById(R.id.seek_bar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -175,6 +176,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 float radius = (float) progress * 10;
 
                 mMap.clear();
+
 
 
                 Circle Circle = mMap.addCircle(new CircleOptions()
@@ -203,7 +205,21 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
     }//onCreate
 
+    //helper method for testing. this only adds the data to the array list of shared pref. It does not actually
+    //turn it on. that is done later
+    //TODO: get the radius from seek bar and not spinner
+    //TODO: check for duplicate names!
+    //TODO: check that at least one criteria is selected
     private void addFence() {
+        //check to make sure we have name
+        if (mNameText.getText().toString().trim().length() < 1) {
+            Toast.makeText(this, "Name is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //here we extract the Fence data
+        String name = mNameText.getText().toString().trim();
+
         int type;
         boolean enter = mBoxEnter.isChecked();
         boolean exit = mBoxExit.isChecked();
@@ -217,8 +233,15 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             type = -1;
         }
 
-        Toast.makeText(getApplicationContext(), "type is " + type, Toast.LENGTH_SHORT).show();
-    }
+        Fence fence = new Fence(name, geoFenceLatLng.latitude, geoFenceLatLng.longitude,
+                mRadius, mDuration, type);
+
+        ArrayList<Fence> fenceArrayList = new ArrayList<>();
+        fenceArrayList.add(fence);
+        MainActivity.saveArrayList(this, fenceArrayList);
+
+        Toast.makeText(getApplicationContext(), name + " added.", Toast.LENGTH_SHORT).show();
+    }//addFence
 
     @Override
     public void onMapReady(GoogleMap map) {
@@ -227,10 +250,10 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
         mMap.setOnCameraIdleListener(this);
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
+        if (MainActivity.checkPermission(this)) {
+            mMap.setMyLocationEnabled(true);
         }
-        mMap.setMyLocationEnabled(true);
+
 
     }//onMapReady
 
@@ -251,19 +274,18 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 .center(geoFenceLatLng)
                 .radius(mRadius)
                 .strokeWidth(5.0f)
-                .strokeColor(Color.argb(255, 66, 133, 244))
-                //transparent blue. first number is alpha (255 is opaque, 0 is full transparent)
-                .fillColor(Color.argb(100, 53, 179, 229)));
+                .strokeColor(getResources().getColor(R.color.circleStroke))
+                .fillColor(getResources().getColor(R.color.circleFill)));
 
     }//drawCircle
 
     //helper method for getting the ids of geofences
     //TODO: this needs to be improved to get it actually from the the geofences. App crashes if you try to remove them after you close the app
-    private void populateGeofenceIdList() {
-        for (Map.Entry<String, LatLng> entry : Constants.MAY_23_FENCES.entrySet()) {
-            mGeofenceIdList.add(entry.getKey());
-        }//for
-    }//populateGeofenceIdList
+//    private void populateGeofenceIdList() {
+//        for (Map.Entry<String, LatLng> entry : Constants.MAY_23_FENCES.entrySet()) {
+//            mGeofenceIdList.add(entry.getKey());
+//        }//for
+//    }//populateGeofenceIdList
 
     /**
      * Helper method for removing geoFence
@@ -290,7 +312,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
         try {
             //build geofence
-            buildGeofenceFromHash();
+//            buildGeofenceFromHash();
             mGeofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent())
                     .addOnSuccessListener(this, new OnSuccessListener<Void>() {
                         @Override
@@ -339,27 +361,27 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     }//buildGeofence
 
     //helper method for building geofences from hashmap
-    private void buildGeofenceFromHash() {
-        Log.v(TAG, "buildGeofence called");
-        //add the geofences from the hashmap
-        for (Map.Entry<String, LatLng> entry : Constants.MAY_23_FENCES.entrySet()) {
-
-            //add geofence
-            mGeofenceList.add(new Geofence.Builder()
-                    .setRequestId(entry.getKey())
-                    .setCircularRegion(
-                            entry.getValue().latitude,
-                            entry.getValue().longitude,
-                            Constants.RADIUS_IN_METERS)
-                    //this is set to 12 hours now
-                    .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
-                    //for entry and exit
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
-                            Geofence.GEOFENCE_TRANSITION_EXIT)
-                    //build
-                    .build());
-        }//for
-    }//buildGeofenceFromHash
+//    private void buildGeofenceFromHash() {
+//        Log.v(TAG, "buildGeofence called");
+//        //add the geofences from the hashmap
+//        for (Map.Entry<String, LatLng> entry : Constants.MAY_23_FENCES.entrySet()) {
+//
+//            //add geofence
+//            mGeofenceList.add(new Geofence.Builder()
+//                    .setRequestId(entry.getKey())
+//                    .setCircularRegion(
+//                            entry.getValue().latitude,
+//                            entry.getValue().longitude,
+//                            Constants.RADIUS_IN_METERS)
+//                    //this is set to 12 hours now
+//                    .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+//                    //for entry and exit
+//                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
+//                            Geofence.GEOFENCE_TRANSITION_EXIT)
+//                    //build
+//                    .build());
+//        }//for
+//    }//buildGeofenceFromHash
 
     //helper method for building the geofence request
     private GeofencingRequest getGeofencingRequest() {
@@ -439,7 +461,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         //move camera to users location
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (!MainActivity.checkPermission(this)) {
             return;
         }
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);

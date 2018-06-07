@@ -28,4 +28,11 @@
         android:layout_margin="12dp"
         android:text="Save Arraylist"/>
 
+    <Button
+        android:id="@+id/button_clear_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:text="Erase all"/>
+
 </LinearLayout>

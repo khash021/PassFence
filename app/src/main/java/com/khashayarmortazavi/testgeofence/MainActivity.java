@@ -34,19 +34,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //check for location permission and ask for it
-        if (ContextCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
+        if (!checkPermission(this)) {
 
             // No explanation needed; request the permission
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_CODE);
-
-            // REQUEST_CODE is an
-            // app-defined int constant. The callback method gets the
-            // result of the request.
         } //permission
 
 
@@ -74,48 +67,83 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        ((Button) findViewById(R.id.button_clear_list)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                eraseAllArrays(getApplicationContext());
+            }
+        });
+
 
     }//onCreate
 
-    public static ArrayList<String> loadArrayList(Context context) {
+    public static ArrayList<Fence> loadArrayList(Context context) {
 
+        //create Gson object
         Gson gson = new Gson();
+        //get reference to the shared pref
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
+        //get the string from the preference (this will be empty string if there is no data in there
+        //yet). as a result the output array list will be null, so we need to check for this in the
+        //save array list when we pull the old data
         String response = sharedPreferences.getString(MY_PREF_ARRAY_KEY, "");
-        ArrayList<String> outputArrayList = gson.fromJson(response,
-                new TypeToken<List<String>>(){}.getType());
+        //convert the json string back to Fence Array list and return it
+        ArrayList<Fence> outputArrayList = gson.fromJson(response,
+                new TypeToken<List<Fence>>(){}.getType());
 
         return outputArrayList;
 
     }//loadArrayList
 
-    public static void saveArrayList(Context context, ArrayList<String> inputArrayList) {
+    public static void saveArrayList(Context context, ArrayList<Fence> inputArrayList) {
 
         //get reference to shared pref
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
 
+        //create Gson object
         Gson gson = new Gson();
 
         //load the previous data, and add the new list to it
-        ArrayList<String> fullList = loadArrayList(context);
+        ArrayList<Fence> fullList = loadArrayList(context);
+
         //if there is nothing in there, this will be null, so we instantiate it
         if (fullList == null) {
             fullList = new ArrayList<>();
-        }
+        }//if
+
         //add the new data to it
         fullList.addAll(inputArrayList);
-//        for (String item : inputArrayList) {
-//            fullList.add(item);
-//        }
 
         //convert arraylist
         String json = gson.toJson(fullList);
 
+        //get the shared preference editor
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        //since we have added the old data to the new list, we can now delete the last entry
         editor.remove(MY_PREF_ARRAY_KEY).apply();
+        //add the new updated list
         editor.putString(MY_PREF_ARRAY_KEY, json);
         editor.apply();
     }//saveArrayList
+
+    public static void eraseAllArrays (Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(MY_PREF_ARRAY_KEY).apply();
+    }//eraseAllArray
+
+
+    public static boolean checkPermission (Context context) {
+        //check for location permission and ask for it
+        if (ContextCompat.checkSelfPermission(context,
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            return false;
+        } else {
+            return true;
+        }
+    }//checkPermission
 
 
 
@@ -140,15 +168,5 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }//onOptionsItemSelected
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }//onStart
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }//onStop
 
 }//MainActivity

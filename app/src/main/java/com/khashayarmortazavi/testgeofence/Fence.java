@@ -1,5 +1,7 @@
 package com.khashayarmortazavi.testgeofence;
 
+import com.google.android.gms.maps.model.LatLng;
+
 /**
  *
  * Custom class for saving, and tracking geofence objects
@@ -46,6 +48,10 @@ public class Fence {
         return longitude;
     }
 
+    public LatLng getLatLng() {
+        return new LatLng(latitude, longitude);
+    }
+
     public float getRadius() {
         return radius;
     }
@@ -60,6 +66,15 @@ public class Fence {
 
     public boolean isActive() {
         return active;
+    }
+
+    public String getCompleteFenceInfo () {
+        String output;
+        output = "id: " + id +
+                "\nLat: " + latitude + ", Lng: " + longitude +
+                "\nRadius: " + radius + ", duration: " + duration +
+                "\nType: " + type;
+        return output;
     }
 
     /**
