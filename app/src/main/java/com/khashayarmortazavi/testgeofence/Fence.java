@@ -6,6 +6,9 @@ import com.google.android.gms.maps.model.LatLng;
  * Custom class for saving, and tracking geofence objects
  */
 
+//TODO: add a method to create the Geofence object so the classes can just call that and then add it to the Geofence client. This will return GeofencingRequest object
+//TODO: all add a removeGeofence object, easily get the id and remove it
+
 public class Fence {
 
     private String id;
@@ -14,10 +17,13 @@ public class Fence {
     private long duration;
     private int type;
     private boolean active;
+    private String durationString;
 
     public static final int FENCE_TYPE_ENTER = 1;
     public static final int FENCE_TYPE_EXIT = 2;
     public static final int FENCE_TYPE_ENTER_EXIT = 3;
+
+    public static final long HOUR_IN_MILLISEC = 3600000;
 
 
     public Fence(String id, double lat, double lng, float radius, long duration, int type) {
@@ -25,7 +31,8 @@ public class Fence {
         this.latitude = lat;
         this.longitude = lng;
         this.radius = radius;
-        this.duration = duration;
+        this.durationString = (duration == -1) ? "Never" : String.valueOf(duration);
+        this.duration = (duration == -1) ? -1 : duration * HOUR_IN_MILLISEC;
         this.type = type;
     }//public constructor
 
@@ -66,12 +73,6 @@ public class Fence {
 
     public String getSnippet() {
         String output;
-        String durationString;
-        if (duration == -1) {
-            durationString = "Never";
-        } else {
-            durationString = String.valueOf(duration);
-        }
         output = id + "," + durationString + "," + getStringType();
         return output;
     }

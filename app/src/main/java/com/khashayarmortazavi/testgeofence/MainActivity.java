@@ -81,10 +81,9 @@ public class MainActivity extends AppCompatActivity {
         ((Button) findViewById(R.id.button_clear_fence)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                removeFences(getApplicationContext());
+                removeAllFences(getApplicationContext());
             }
         });
-
 
     }//onCreate
 
@@ -141,9 +140,10 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(MY_PREF_ARRAY_KEY).apply();
+        Toast.makeText(context, "Data erased", Toast.LENGTH_SHORT).show();
     }//eraseAllArray
 
-    public static void removeFences(Context context){
+    public static void removeAllFences(Context context){
         ArrayList<Fence> fenceArrayList = loadArrayList(context);
         if (fenceArrayList == null) {
             Toast.makeText(context, "No Geofence", Toast.LENGTH_SHORT).show();
@@ -158,10 +158,12 @@ public class MainActivity extends AppCompatActivity {
         GeofencingClient geofencingClient = LocationServices.getGeofencingClient(context);
         geofencingClient.removeGeofences(idArrayList);
 
+        //also clean the internal arrayList
+        eraseAllArrays(context);
+
         Toast.makeText(context, "Geofences removed", Toast.LENGTH_SHORT).show();
         Log.v(TAG, "Geofences removed");
-        
-    }//removeFences
+    }//removeAllFences
 
 
     public static boolean checkPermission (Context context) {

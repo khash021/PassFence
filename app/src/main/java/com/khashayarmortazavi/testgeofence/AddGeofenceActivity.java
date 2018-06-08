@@ -40,6 +40,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 
+
+//TODO: convert times to millisec!!!!
+
 public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, OnMapReadyCallback,
         GoogleMap.OnCameraIdleListener {
@@ -73,6 +76,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_geofence);
+        Log.v(TAG, "onCreate Called");
 
         //Add map fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -378,44 +382,44 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                             });
                 }//if permission
                 break;
-                case Fence.FENCE_TYPE_ENTER_EXIT:
-                    //make the builder
-                    Geofence.Builder geofenceBuilderBoth = new Geofence.Builder();
-                    geofenceBuilderBoth.setRequestId(id)
-                            .setCircularRegion(lat, lng, radius)
-                            .setExpirationDuration(duration)
-                            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
+            case Fence.FENCE_TYPE_ENTER_EXIT:
+                //make the builder
+                Geofence.Builder geofenceBuilderBoth = new Geofence.Builder();
+                geofenceBuilderBoth.setRequestId(id)
+                        .setCircularRegion(lat, lng, radius)
+                        .setExpirationDuration(duration)
+                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
 
-                    //build a geofence object using the builder
-                    Geofence geofenceBoth = geofenceBuilderBoth.build();
+                //build a geofence object using the builder
+                Geofence geofenceBoth = geofenceBuilderBoth.build();
 
-                    GeofencingRequest.Builder requestBuilderBoth = new GeofencingRequest.Builder();
-                    //this means that GEOFENCE_TRANSITION_ENTER should be triggered if the device is already inside the geofence
-                    requestBuilderBoth.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-                    requestBuilderBoth.addGeofence(geofenceBoth);
+                GeofencingRequest.Builder requestBuilderBoth = new GeofencingRequest.Builder();
+                //this means that GEOFENCE_TRANSITION_ENTER should be triggered if the device is already inside the geofence
+                requestBuilderBoth.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+                requestBuilderBoth.addGeofence(geofenceBoth);
 
-                    //build the Geofencing  request object using the builder
-                    GeofencingRequest requestBoth = requestBuilderBoth.build();
+                //build the Geofencing  request object using the builder
+                GeofencingRequest requestBoth = requestBuilderBoth.build();
 
-                    if (MainActivity.checkPermission(this)) {
-                        mGeofencingClient.addGeofences(requestBoth, getGeofencePendingIntent())
-                                .addOnSuccessListener(this, new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Toast.makeText(getApplicationContext(), "Geofence added", Toast.LENGTH_SHORT).show();
-                                        Log.v(TAG, "Geofence added");
-                                        finish();
-                                    }
-                                })
-                                .addOnFailureListener(this, new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(getApplicationContext(), "Error adding geofence", Toast.LENGTH_SHORT).show();
-                                        Log.v(TAG, "Geofence adding failed", e);
-                                    }
-                                });
-                    }//if permission
-                    break;
+                if (MainActivity.checkPermission(this)) {
+                    mGeofencingClient.addGeofences(requestBoth, getGeofencePendingIntent())
+                            .addOnSuccessListener(this, new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(getApplicationContext(), "Geofence added", Toast.LENGTH_SHORT).show();
+                                    Log.v(TAG, "Geofence added");
+                                    finish();
+                                }
+                            })
+                            .addOnFailureListener(this, new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(getApplicationContext(), "Error adding geofence", Toast.LENGTH_SHORT).show();
+                                    Log.v(TAG, "Geofence adding failed", e);
+                                }
+                            });
+                }//if permission
+                break;
         }//switch
     }//addGeofence
 
