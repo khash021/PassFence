@@ -9,11 +9,14 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.NumberPicker;
 import android.widget.SeekBar;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -41,14 +44,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import java.util.ArrayList;
 
 
-//TODO: convert times to millisec!!!!
-
 public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, OnMapReadyCallback,
         GoogleMap.OnCameraIdleListener {
 
     private static final String TAG = AddGeofenceActivity.class.getSimpleName();
-    private static final long GEOFENCE_DURATION_MILLISEC = 43200000; //12 hours in millisec
 
 
     protected GoogleApiClient mGoogleApiClient;
@@ -57,19 +57,11 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     private GoogleMap mMap;
     private LatLng geoFenceLatLng;
 
-    private ArrayList<String> mGeofenceIdList;
-    private ArrayList<Geofence> mGeofenceList;
-
     //geofence stuff
     private float mRadius;
     private long mDuration;
     private EditText mNameText;
 
-    final String[] RADIUS_ENTRIES = {"5", "10", "25", "50", "100", "500", "1000"};
-    final String[] DURATION_ENTRIES = {"1", "2", "3", "5", "10", "12", "24", "never"};
-
-    //TODO: change duration to spinner
-    private NumberPicker mRadiusPicker, mDurationPicker;
     private CheckBox mBoxEnter, mBoxExit;
 
 
@@ -83,10 +75,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        mGeofenceIdList = new ArrayList<>();
-
-
-        mGeofenceList = new ArrayList<Geofence>();
 
         // Kick off the request to build GoogleApiClient.
         buildGoogleApiClient();
@@ -105,40 +93,27 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
         mNameText = findViewById(R.id.text_name);
 
-        //default values
-        mRadius = 50;
-        //(-1 is never)
-        mDuration = -1;
-
-        //radius number picker
-        mRadiusPicker = findViewById(R.id.np_raduis);
-        mRadiusPicker.setMinValue(0);
-        mRadiusPicker.setMaxValue(RADIUS_ENTRIES.length - 1);
-        mRadiusPicker.setDisplayedValues(RADIUS_ENTRIES);
-        //if this is true, then it will keep spinning, false makes it stop at each end
-        mRadiusPicker.setWrapSelectorWheel(true);
-        mRadiusPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+        Spinner durationSpinner = findViewById(R.id.spinner_duration);
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
+                R.array.spinner_duration_array, android.R.layout.simple_spinner_dropdown_item);
+        // Specify the layout to use when the list of choices appears
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        durationSpinner.setAdapter(spinnerAdapter);
+        //initialized the array at 12 hours and set the radius to that
+        durationSpinner.setSelection(7);
+        mDuration = 12;
+        //set listener
+        durationSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                mRadius = Float.parseFloat(RADIUS_ENTRIES[newVal]);
-//                drawCircle();
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                setDuration(position);
+
             }
-        });
 
-        //duration number picker
-        mDurationPicker = findViewById(R.id.np_duration);
-        mDurationPicker.setMinValue(0);
-        mDurationPicker.setMaxValue(DURATION_ENTRIES.length - 1);
-        mDurationPicker.setDisplayedValues(DURATION_ENTRIES);
-        mDurationPicker.setWrapSelectorWheel(true);
-        mDurationPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                if (newVal == 7) {
-                    mDuration = -1;
-                } else {
-                    mDuration = Long.parseLong(DURATION_ENTRIES[newVal]);
-                }
+            public void onNothingSelected(AdapterView<?> parent) {
 
             }
         });
@@ -149,15 +124,22 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         mBoxExit = findViewById(R.id.check_exit);
 
         SeekBar seekBar = findViewById(R.id.seek_bar);
+        //default at 50 meters
+        seekBar.setProgress(5);
+        mRadius = 50;
+        final TextView radiusTextView = findViewById(R.id.text_radius);
+        radiusTextView.setText("50");
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (progress < 1) {
-                    return;
-                }//if
-                mRadius = (float) progress * 10;
+                //set the radius to 5 if it is at the very beginning (0 progress), otherwise, multiply by 10
+                mRadius = (progress < 1) ? 5.0f : ((float) progress * 10);
                 //draw circle
                 drawCircle(geoFenceLatLng, mRadius);
+                //add the radius
+                String radius = String.valueOf(mRadius);
+                radius = radius.substring(0, radius.indexOf("."));
+                radiusTextView.setText(radius);
             }//onProgressChanged
 
             @Override
@@ -173,6 +155,11 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 } else {
                     mRadius = (float) seekBar.getProgress() * 10;
                 }
+                //add the radius
+                String radiusString = String.valueOf(mRadius);
+                radiusString = radiusString.substring(0, radiusString.indexOf("."));
+                ((TextView) findViewById(R.id.text_radius)).setText(radiusString);
+
                 //add marker to center
                 if (geoFenceLatLng == null) {
                     Log.v(TAG, "location null");
@@ -198,6 +185,8 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
 
     }//onCreate
+
+
 
     @Override
     public void onMapReady(GoogleMap map) {
@@ -296,7 +285,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     }//addFence
 
     //TODO: move all of this in the Fence class. just call getBuilder
-    private void addGeofence(Fence fence) {
+    private void addGeofence(final Fence fence) {
         //get the info from the fence
         String id = fence.getId();
         double lat = fence.getLatitude();
@@ -332,6 +321,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                                 public void onSuccess(Void aVoid) {
                                     Toast.makeText(getApplicationContext(), "Geofence added", Toast.LENGTH_SHORT).show();
                                     Log.v(TAG, "Geofence added");
+                                    fence.setActive(true);
                                     finish();
                                 }
                             })
@@ -423,82 +413,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         }//switch
     }//addGeofence
 
-    /**
-     * Helper method for adding geoFence
-     */
-    private void addGeofenceButtonHandler() {
-        Log.v(TAG, "addGeofenceButtonHandler called");
-        //check to make sure the client is connected
-        if (!mGoogleApiClient.isConnected()) {
-            Toast.makeText(this, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            //build geofence
-//            buildGeofenceFromHash();
-            mGeofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent())
-                    .addOnSuccessListener(this, new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            //geofence added
-                            Toast.makeText(getApplicationContext(), "Geofence added", Toast.LENGTH_SHORT).show();
-                            Log.v(TAG, "Geofence added");
-                        }
-                    })
-                    .addOnFailureListener(this, new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            //failed
-                            Toast.makeText(getApplicationContext(), "Error adding geofence", Toast.LENGTH_SHORT).show();
-                            Log.v(TAG, "Geofence adding failed", e);
-                        }
-                    });
-        } catch (SecurityException e) {
-            Log.e(TAG, "Security exception", e);
-        }
-
-    }//addGeofenceButtonHandler
-
-    //helper method for creating geofence
-    private void buildGeofence() {
-        Log.v(TAG, "buildGeofence called");
-        //get the radius from the picker
-        mRadius = Float.parseFloat(RADIUS_ENTRIES[mRadiusPicker.getValue()]);
-
-        //Create geofence objects
-        mGeofenceList.add(new Geofence.Builder()
-                //set ID
-                .setRequestId(mGeofenceIdList.get(0))
-                //set region and radius
-                .setCircularRegion(49.235675, -123.057118, mRadius) //ASCS
-//                .setCircularRegion(49.235675, -123.057118, Constants.RADIUS_IN_METERS) //ASCS
-//                .setCircularRegion(37.421997, -122.084007, RADIUS_IN_METERS) //Google (emulator)
-                //set expiary
-                .setExpirationDuration(Geofence.NEVER_EXPIRE)
-//                .setExpirationDuration(GEOFENCE_DURATION_MILLISEC)
-                //set transition type
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
-                        Geofence.GEOFENCE_TRANSITION_EXIT)
-                .build());
-
-    }//buildGeofence
-
-    //helper method for building the geofence request
-    private GeofencingRequest getGeofencingRequest() {
-        Log.v(TAG, "getGeofencingRequest called");
-
-        //create builder
-        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        //The INITIAL_TRIGGER_ENTER means that geofencing service should trigger a
-        // GEOFENCE_TRANSITION_ENTER notification when the geodence is added and if the device
-        //is already in that geofence
-        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-        //add the geofences to be monitored (our list that we made)
-        builder.addGeofences(mGeofenceList);
-        return builder.build();
-    }//getGeofencingRequest
-
     //helper method to define a PendingIntent that starts an IntentService
     private PendingIntent getGeofencePendingIntent() {
         Log.v(TAG, "getGeofencePendingIntent called");
@@ -531,6 +445,42 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         }
 
     }//onResult
+
+    private void setDuration(int index) {
+        String[] durationArray = getResources().getStringArray(R.array.spinner_duration_array);
+        switch (index) {
+            case 0:
+                mDuration = Long.parseLong(durationArray[0]);
+                break;
+            case 1:
+                mDuration = Long.parseLong(durationArray[1]);
+                break;
+            case 2:
+                mDuration = Long.parseLong(durationArray[2]);
+                break;
+            case 3:
+                mDuration = Long.parseLong(durationArray[3]);
+                break;
+            case 4:
+                mDuration = Long.parseLong(durationArray[4]);
+                break;
+            case 5:
+                mDuration = Long.parseLong(durationArray[5]);
+                break;
+            case 6:
+                mDuration = Long.parseLong(durationArray[6]);
+                break;
+            case 7:
+                mDuration = Long.parseLong(durationArray[7]);
+                break;
+            case 8:
+                mDuration = Long.parseLong(durationArray[8]);
+                break;
+            case 9:
+                mDuration = -1;
+                break;
+        }//switch
+    }//setDuration
 
 
     protected synchronized void buildGoogleApiClient() {

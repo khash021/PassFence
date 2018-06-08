@@ -56,6 +56,7 @@
 
         </LinearLayout>
 
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -70,16 +71,15 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/text_radius"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="15dp"
                     android:text="Radius (m)" />
 
-                <NumberPicker
-                    android:id="@+id/np_raduis"
+                <TextView
+                    android:id="@+id/text_radius"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:layout_height="wrap_content" />
 
             </LinearLayout>
 
@@ -97,14 +97,24 @@
                     android:layout_margin="15dp"
                     android:text="Duration (hr)" />
 
-                <NumberPicker
-                    android:id="@+id/np_duration"
+                <Spinner
+                    android:id="@+id/spinner_duration"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:layout_height="wrap_content"/>
 
             </LinearLayout>
 
+
         </LinearLayout>
+
+        <android.support.v7.widget.AppCompatSeekBar
+            android:id="@+id/seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="8dp" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -114,26 +124,27 @@
                 android:id="@+id/text_criteria"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Criteria: "
-                android:layout_centerVertical="true"
                 android:layout_alignParentLeft="true"
-                android:layout_marginLeft="16dp"/>
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="16dp"
+                android:text="Criteria: " />
 
             <CheckBox
                 android:id="@+id/check_enter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Enter"
-                android:layout_toEndOf="@+id/text_criteria"
                 android:layout_marginLeft="30dp"
-                android:layout_marginRight="12dp"/>
+                android:layout_marginRight="12dp"
+                android:layout_toEndOf="@+id/text_criteria"
+                android:text="Enter" />
+
             <CheckBox
                 android:id="@+id/check_exit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Exit"
                 android:layout_alignBaseline="@+id/check_enter"
-                android:layout_toEndOf="@+id/check_enter"/>
+                android:layout_toEndOf="@+id/check_enter"
+                android:text="Exit" />
 
         </RelativeLayout>
 
@@ -142,7 +153,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:layout_marginTop="12dp"
             android:orientation="horizontal">
 
             <Button
@@ -153,16 +163,8 @@
 
         </LinearLayout>
 
-        <android.support.v7.widget.AppCompatSeekBar
-            android:id="@+id/seek_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="20dp"
-            android:layout_marginLeft="20dp"/>
 
     </LinearLayout>
-
-
 
 
 </LinearLayout>
