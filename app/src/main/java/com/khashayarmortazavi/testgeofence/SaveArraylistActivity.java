@@ -25,7 +25,7 @@ public class SaveArraylistActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.save_arraylist);
+        setContentView(R.layout.activity_save_arraylist);
 
         input = findViewById(R.id.text_input);
         output = findViewById(R.id.text_output);
@@ -58,7 +58,7 @@ public class SaveArraylistActivity extends AppCompatActivity {
                 } else {
                     output.setText("");
                     for (Fence item : list) {
-                        output.append(item.getCompleteFenceInfo());
+                        output.append(item.getSnippet());
                     }//for
                 }//if
             }

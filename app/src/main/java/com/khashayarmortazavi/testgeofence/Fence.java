@@ -3,10 +3,7 @@ package com.khashayarmortazavi.testgeofence;
 import com.google.android.gms.maps.model.LatLng;
 
 /**
- *
  * Custom class for saving, and tracking geofence objects
- *
- *
  */
 
 public class Fence {
@@ -21,7 +18,6 @@ public class Fence {
     public static final int FENCE_TYPE_ENTER = 1;
     public static final int FENCE_TYPE_EXIT = 2;
     public static final int FENCE_TYPE_ENTER_EXIT = 3;
-
 
 
     public Fence(String id, double lat, double lng, float radius, long duration, int type) {
@@ -68,13 +64,29 @@ public class Fence {
         return active;
     }
 
-    public String getCompleteFenceInfo () {
+    public String getSnippet() {
         String output;
-        output = "id: " + id +
-                "\nLat: " + latitude + ", Lng: " + longitude +
-                "\nRadius: " + radius + ", duration: " + duration +
-                "\nType: " + type;
+        String durationString;
+        if (duration == -1) {
+            durationString = "Never";
+        } else {
+            durationString = String.valueOf(duration);
+        }
+        output = id + "," + durationString + "," + getStringType();
         return output;
+    }
+
+    private String getStringType() {
+        switch (type) {
+            case FENCE_TYPE_ENTER:
+                return "Enter";
+            case FENCE_TYPE_EXIT:
+                return "Exit";
+            case FENCE_TYPE_ENTER_EXIT:
+                return "Enter/Exit";
+            default:
+                return "Error";
+        }//switch
     }
 
     /**

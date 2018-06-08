@@ -149,15 +149,7 @@
                 android:id="@+id/button_add_geo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="12dp"
                 android:text="Add GeoFence" />
-
-            <Button
-                android:id="@+id/button_draw_circle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="12dp"
-                android:text="Draw"/>
 
         </LinearLayout>
 

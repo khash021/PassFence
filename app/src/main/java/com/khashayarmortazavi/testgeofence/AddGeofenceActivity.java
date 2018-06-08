@@ -2,7 +2,6 @@ package com.khashayarmortazavi.testgeofence;
 
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -29,9 +28,11 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -65,6 +66,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     final String[] RADIUS_ENTRIES = {"5", "10", "25", "50", "100", "500", "1000"};
     final String[] DURATION_ENTRIES = {"1", "2", "3", "5", "10", "12", "24", "never"};
 
+    //TODO: change duration to spinner
     private NumberPicker mRadiusPicker, mDurationPicker;
     private CheckBox mBoxEnter, mBoxExit;
 
@@ -94,26 +96,9 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         addGeofenceButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                addGeofenceButtonHandler();
                 addFence();
             }
         });//addGeofenceButton
-
-        Button drawCircleButton = findViewById(R.id.button_draw_circle);
-        drawCircleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                drawCircle();
-            }
-        });
-
-//        Button removeGeofenceButton = findViewById(R.id.remove_geo_button);
-//        removeGeofenceButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                removeGeofence();
-//            }
-//        });//removeGeofenceButton
 
         mNameText = findViewById(R.id.text_name);
 
@@ -160,69 +145,94 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         mBoxEnter = findViewById(R.id.check_enter);
         mBoxExit = findViewById(R.id.check_exit);
 
-//        //build geofence
-//        buildGeofence();
-
-//        populateGeofenceIdList();
-
         SeekBar seekBar = findViewById(R.id.seek_bar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (progress < 1) {
                     return;
-                }
-
-                float radius = (float) progress * 10;
-
-                mMap.clear();
-
-
-
-                Circle Circle = mMap.addCircle(new CircleOptions()
-                        .center(geoFenceLatLng)
-                        .radius(radius)
-                        .strokeWidth(5.0f)
-                        .strokeColor(Color.argb(255, 66, 133, 244))
-                        //transparent blue. first number is alpha (255 is opaque, 0 is full transparent)
-                        .fillColor(Color.argb(100, 53, 179, 229)));
-
-            }
+                }//if
+                mRadius = (float) progress * 10;
+                //draw circle
+                drawCircle(geoFenceLatLng, mRadius);
+            }//onProgressChanged
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
+            }//onStartTrackingTouch
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                //set the radius
+                int radius = seekBar.getProgress();
+                if (radius < 1) {
+                    mRadius = 5.0f;
+                } else {
+                    mRadius = (float) seekBar.getProgress() * 10;
+                }
+                //add marker to center
+                if (geoFenceLatLng == null) {
+                    Log.v(TAG, "location null");
+                    return;
+                }
+
+                //place marker
                 Marker marker = mMap.addMarker(new MarkerOptions()
                         .position(geoFenceLatLng));
 
-            }
-        });
+                //check to see if we see the whole circle
+                LatLngBounds visibleBound = mMap.getProjection().getVisibleRegion().latLngBounds;
+                LatLng swCorner = MapViewGeofenceActivity.swCorner(geoFenceLatLng, mRadius);
+                LatLng neCorner = MapViewGeofenceActivity.neCorner(geoFenceLatLng, mRadius);
+                if (!visibleBound.contains(swCorner) || !visibleBound.contains(neCorner)) {
+                    visibleBound.including(swCorner);
+                    visibleBound.including(neCorner);
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(visibleBound, 200));
+                }
+
+            }//onStopTrackingTouch
+        });//SeekBarChangeListener
 
 
     }//onCreate
 
     //helper method for testing. this only adds the data to the array list of shared pref. It does not actually
     //turn it on. that is done later
-    //TODO: get the radius from seek bar and not spinner
-    //TODO: check for duplicate names!
-    //TODO: check that at least one criteria is selected
-    private void addFence() {
-        //check to make sure we have name
-        if (mNameText.getText().toString().trim().length() < 1) {
-            Toast.makeText(this, "Name is required", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
+    private void addFence() {
         //here we extract the Fence data
         String name = mNameText.getText().toString().trim();
-
         int type;
         boolean enter = mBoxEnter.isChecked();
         boolean exit = mBoxExit.isChecked();
+
+        //check to make sure we have name
+        if (name.length() < 1) {
+            Toast.makeText(this, "Name required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //check to makes ure at least one checkbox is checked
+        if (!enter && !exit) {
+            Toast.makeText(this, "Criteria required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //check against duplicate ids
+        ArrayList<Fence> savedFenceArrayList = MainActivity.loadArrayList(this);
+        //check to make sure the array is not null
+        if (savedFenceArrayList != null) {
+            ArrayList<String> idArrayList = new ArrayList<>();
+            for (Fence fence : savedFenceArrayList) {
+                idArrayList.add(fence.getId().toLowerCase());
+            }//for
+            if (idArrayList.contains(name.toLowerCase())) {
+                Toast.makeText(this, "Name is already registered", Toast.LENGTH_SHORT).show();
+                return;
+            }//if
+        }
+
+        //set the type
         if (enter && exit) {
             type = Fence.FENCE_TYPE_ENTER_EXIT;
         } else if (enter && !exit) {
@@ -233,6 +243,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             type = -1;
         }
 
+        //now we have done all the checks, we can safely add the geofence to the list
         Fence fence = new Fence(name, geoFenceLatLng.latitude, geoFenceLatLng.longitude,
                 mRadius, mDuration, type);
 
@@ -240,7 +251,10 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         fenceArrayList.add(fence);
         MainActivity.saveArrayList(this, fenceArrayList);
 
-        Toast.makeText(getApplicationContext(), name + " added.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), name + "Geofence added.", Toast.LENGTH_SHORT).show();
+
+        //TODO: clean the map and stay, or just simple finish the activity here
+//        finish();
     }//addFence
 
     @Override
@@ -249,6 +263,10 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         mMap = map;
 
         mMap.setOnCameraIdleListener(this);
+
+        //disable map toolbar
+        UiSettings mUiSettings = mMap.getUiSettings();
+        mUiSettings.setMapToolbarEnabled(false);
 
         if (MainActivity.checkPermission(this)) {
             mMap.setMyLocationEnabled(true);
@@ -262,30 +280,22 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         geoFenceLatLng = mMap.getCameraPosition().target;
     }//onCameraIdle
 
-    private void drawCircle() {
+    private void drawCircle(LatLng center, float radius) {
         //draw circle on map
-        if (mMap == null || geoFenceLatLng == null) {
+        if (mMap == null || center == null) {
             Toast.makeText(getApplicationContext(), "Error drawing circle", Toast.LENGTH_SHORT).show();
             return;
         }//if map null
 
         mMap.clear();
         Circle circle = mMap.addCircle(new CircleOptions()
-                .center(geoFenceLatLng)
-                .radius(mRadius)
+                .center(center)
+                .radius(radius)
                 .strokeWidth(5.0f)
                 .strokeColor(getResources().getColor(R.color.circleStroke))
                 .fillColor(getResources().getColor(R.color.circleFill)));
 
     }//drawCircle
-
-    //helper method for getting the ids of geofences
-    //TODO: this needs to be improved to get it actually from the the geofences. App crashes if you try to remove them after you close the app
-//    private void populateGeofenceIdList() {
-//        for (Map.Entry<String, LatLng> entry : Constants.MAY_23_FENCES.entrySet()) {
-//            mGeofenceIdList.add(entry.getKey());
-//        }//for
-//    }//populateGeofenceIdList
 
     /**
      * Helper method for removing geoFence

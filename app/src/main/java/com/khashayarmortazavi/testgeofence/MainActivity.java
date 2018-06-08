@@ -8,11 +8,15 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.google.android.gms.location.GeofencingClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -74,6 +78,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        ((Button) findViewById(R.id.button_clear_fence)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                removeFences(getApplicationContext());
+            }
+        });
+
 
     }//onCreate
 
@@ -131,6 +142,22 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(MY_PREF_ARRAY_KEY).apply();
     }//eraseAllArray
+
+    public static void removeFences(Context context){
+        ArrayList<Fence> fenceArrayList = loadArrayList(context);
+        if (fenceArrayList == null) {
+            Toast.makeText(context, "No Geofence", Toast.LENGTH_SHORT).show();
+            Log.v(TAG, "No geofence to remove");
+            return;
+        }
+        ArrayList<String> idArrayList = new ArrayList<>();
+        for (Fence fence : fenceArrayList) {
+            idArrayList.add(fence.getId());
+        }
+
+        GeofencingClient geofencingClient = LocationServices.getGeofencingClient(context);
+        geofencingClient.removeGeofences(idArrayList);
+    }//removeFences
 
 
     public static boolean checkPermission (Context context) {

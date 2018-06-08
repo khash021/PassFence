@@ -3,6 +3,10 @@ package com.khashayarmortazavi.testgeofence;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -10,6 +14,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -22,6 +27,8 @@ import com.google.maps.android.SphericalUtil;
 import java.util.ArrayList;
 
 public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapReadyCallback {
+
+    private final String TAG = MapViewGeofenceActivity.class.getSimpleName();
 
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationClient;
@@ -47,30 +54,30 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
     public void onMapReady(GoogleMap map) {
         mMap = map;
 
+        //use custom window
+        mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
+
         //check for location permission
-        if (!MainActivity.checkPermission(this)) {
-            return;
+        if (MainActivity.checkPermission(this)) {
+            mMap.setMyLocationEnabled(true);
         }//permission
 
-        mMap.setMyLocationEnabled(true);
 
-//        //move the camera
-//        mFusedLocationClient.getLastLocation()
-//                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-//                    @Override
-//                    public void onSuccess(Location location) {
-//                        if (location != null) {
-//                            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-//                            mMap.animateCamera(CameraUpdateFactory
-//                                    .newLatLng(latLng));
-//                        }//if
-//                    }//onSuccess
-//                });
+        //disable map toolbar
+        UiSettings mUiSettings = mMap.getUiSettings();
+        mUiSettings.setMapToolbarEnabled(false);
 
         addGeofenceToMap();
     }//onMapReady
 
     private void addGeofenceToMap() {
+
+        //check to make sure that the list is not null in case there is no fence added
+        if (fenceArrayList == null) {
+            Toast.makeText(this, "No Geofences to show", Toast.LENGTH_SHORT).show();
+            Log.v(TAG, "Geofence ArrayList null");
+            return;
+        }//if
 
         //create our bound object to show everything
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
@@ -81,29 +88,7 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
             LatLng latLng = fence.getLatLng();
             float radius = fence.getRadius();
             long duration = fence.getDuration();
-            if (duration != -1) {
-                duration = duration / 3600000; //convert to hour
-            }
-            String durationString;
-            if (duration == -1) {
-                durationString = "Never";
-            } else {
-                durationString = String.valueOf(duration) + "hours";
-            }
-            String type = "";
-            switch (fence.getType()) {
-                case Fence.FENCE_TYPE_ENTER:
-                    type = "Enter";
-                    break;
-                case Fence.FENCE_TYPE_EXIT:
-                    type = "Exit";
-                    break;
-                case Fence.FENCE_TYPE_ENTER_EXIT:
-                    type = "Enter/Exit";
-                    break;
-            }
-            String snippet = "Duration: " + durationString +
-                    "\nTrigger: " + type;
+            String snippet = fence.getSnippet();
 
             Marker marker = mMap.addMarker(new MarkerOptions()
                     .position(latLng)
@@ -130,25 +115,90 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
         //build the builder
         LatLngBounds bounds = builder.build();
 
-        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 200));//this is the pixel padding
+        //Setting the width and height of your screen
+        int width = getResources().getDisplayMetrics().widthPixels;
+        int height = getResources().getDisplayMetrics().heightPixels;
+        int padding = (int) (width * 0.1); // offset from edges of the map 10% of screen
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));//this is the pixel padding
 
 
     }//addGeofenceToMap
 
     //helper methods to get the bounds of the cirlcle
-    private LatLng swCorner(LatLng center, float radius ) {
+    public static LatLng swCorner(LatLng center, float radius ) {
         double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
         LatLng southwestCorner =
                 SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 225.0);
         return southwestCorner;
     }
 
-    private LatLng neCorner (LatLng center, float radius ) {
+    public static LatLng neCorner (LatLng center, float radius ) {
         double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
         LatLng northeastCorner =
                 SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 45.0);
         return northeastCorner;
     }
+
+    /**
+     * This class is for customizing Info Windows
+     */
+    class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+
+        // Viewgroup containing 3 ImageViews with ids "garbage, container, and paper"
+        private final View mContent;
+
+        CustomInfoWindowAdapter() {
+            mContent = getLayoutInflater().inflate(R.layout.custom_info_content, null);
+        }//CustomInfoWindowAdapter
+
+        /**
+         * These two methods are part of the InfoWindowAdapter interface that we have to implement
+         * It first calls getInfoWindow, and if this turns null, then it goes to getInfoContent;
+         * if that one also returns null, then the default behavior will happen; which is the default
+         * Info Window.
+         *
+         * @param marker is the markerMyLocation that was clicked on
+         * @return view
+         */
+        @Override
+        public View getInfoWindow(Marker marker) {
+            return null;
+        }//getInfoWindow
+
+        @Override
+        public View getInfoContents(Marker marker) {
+            //For prototype, this returns null in case they click on marker (this will produce runtime error
+            //since the markers dont have a tag
+            render(marker, mContent);
+            return mContent;
+        }//getInfoContents
+
+        /**
+         * This is the helper method for making the custom Info Window.
+         * In the layout file (custom_info_content), get the data from marker and set them
+         *
+         * @param marker is the markerMyLocation that was clicked on, passed using the callbacks above
+         */
+        private void render(Marker marker, View view) {
+            //find the title text view and make it invisible (to prevent bugs for other info windows)
+            TextView nameText = view.findViewById(R.id.text_name);
+            TextView durationText = view.findViewById(R.id.text_duration);
+            TextView criteriaText = view.findViewById(R.id.text_criteria);
+
+            String snippet = marker.getSnippet();
+
+            //TODO: add try/catch
+            String[] properties = snippet.trim().split(",");
+            String name = properties[0];
+            String duration = properties[1];
+            String type = properties[2];
+
+            nameText.setText("Id: " + name);
+            durationText.setText("Duration: " + duration);
+            criteriaText.setText("Criteria: " + type);
+        }//render
+    }//CustomInfoWindowAdapter
 
 
 }//MapViewGeofenceActivity
