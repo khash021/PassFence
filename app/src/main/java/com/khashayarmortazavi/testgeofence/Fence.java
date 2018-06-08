@@ -2,6 +2,10 @@ package com.khashayarmortazavi.testgeofence;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 /**
  * Custom class for saving, and tracking geofence objects
  */
@@ -18,6 +22,7 @@ public class Fence {
     private int type;
     private boolean active;
     private String durationString;
+    private long expiaryTimeMilliSec;
 
     public static final int FENCE_TYPE_ENTER = 1;
     public static final int FENCE_TYPE_EXIT = 2;
@@ -34,6 +39,12 @@ public class Fence {
         this.durationString = (duration == -1) ? "Never" : String.valueOf(duration);
         this.duration = (duration == -1) ? -1 : duration * HOUR_IN_MILLISEC;
         this.type = type;
+        if (duration == -1) {
+            expiaryTimeMilliSec = -1;
+        } else {
+            expiaryTimeMilliSec = Calendar.getInstance().getTimeInMillis() +
+                    (duration * HOUR_IN_MILLISEC);
+        }
     }//public constructor
 
     /**
@@ -73,8 +84,17 @@ public class Fence {
 
     public String getSnippet() {
         String output;
-        output = id + "," + durationString + "," + getStringType();
+        output = id + "," + getExpiary().trim() + "," + getStringType();
         return output;
+    }
+
+    public String getExpiary() {
+        if (expiaryTimeMilliSec == -1) {
+            return "Never";
+        } else {
+            final DateFormat dateFormat = new SimpleDateFormat("MMM.dd 'at' HH:mm");
+            return dateFormat.format(expiaryTimeMilliSec);
+        }
     }
 
     private String getStringType() {

@@ -191,11 +191,11 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
             //TODO: add try/catch
             String[] properties = snippet.trim().split(",");
             String name = properties[0];
-            String duration = properties[1];
+            String expiary = properties[1];
             String type = properties[2];
 
             nameText.setText("Id: " + name);
-            durationText.setText("Duration: " + duration);
+            durationText.setText("Expires: " + expiary);
             criteriaText.setText("Criteria: " + type);
         }//render
     }//CustomInfoWindowAdapter

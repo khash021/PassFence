@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private final static String TAG = MainActivity.class.getSimpleName();
     private final static int REQUEST_CODE = 1;
 
+    private AdView mAdView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -192,14 +194,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void addBannerAd() {
         //find the ad view
-        AdView adView = findViewById(R.id.ad_view);
+        mAdView = findViewById(R.id.ad_view);
         //attach the listener first before loading it
-        adView.setAdListener(new ToastAdListener(this));
+        //this is for testing of knowing what is going on at each step, so disable now
+//        adView.setAdListener(new ToastAdListener(this));
         //create an ad request object using the builder
         AdRequest adRequest = new AdRequest.Builder()
                 .build();
         //load the ad request into the ad view
-        adView.loadAd(adRequest);
+        mAdView.loadAd(adRequest);
     }//addBannerAd
 
 
@@ -225,5 +228,26 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }//onOptionsItemSelected
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //resume adview
+        mAdView.resume();
+    }//onResume
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //pause adview (Pauses any extra processing associated with this ad view.)
+        mAdView.pause();
+    }//onPause
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Destroy the AdView.
+        mAdView.destroy();
+    }//onDestroy
 
 }//MainActivity
