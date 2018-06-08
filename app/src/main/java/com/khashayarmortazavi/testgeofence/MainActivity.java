@@ -157,6 +157,10 @@ public class MainActivity extends AppCompatActivity {
 
         GeofencingClient geofencingClient = LocationServices.getGeofencingClient(context);
         geofencingClient.removeGeofences(idArrayList);
+
+        Toast.makeText(context, "Geofences removed", Toast.LENGTH_SHORT).show();
+        Log.v(TAG, "Geofences removed");
+        
     }//removeFences
 
 

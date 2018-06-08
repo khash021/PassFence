@@ -48,7 +48,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     private static final long GEOFENCE_DURATION_MILLISEC = 43200000; //12 hours in millisec
 
 
-
     protected GoogleApiClient mGoogleApiClient;
     private GeofencingClient mGeofencingClient;
     private PendingIntent mGeofencePendingIntent;
@@ -196,6 +195,44 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
     }//onCreate
 
+    @Override
+    public void onMapReady(GoogleMap map) {
+        Log.v(TAG, "onMapReady called");
+        mMap = map;
+
+        mMap.setOnCameraIdleListener(this);
+
+        //disable map toolbar
+        UiSettings mUiSettings = mMap.getUiSettings();
+        mUiSettings.setMapToolbarEnabled(false);
+
+        if (MainActivity.checkPermission(this)) {
+            mMap.setMyLocationEnabled(true);
+        }
+    }//onMapReady
+
+    @Override
+    public void onCameraIdle() {
+        geoFenceLatLng = mMap.getCameraPosition().target;
+    }//onCameraIdle
+
+    private void drawCircle(LatLng center, float radius) {
+        //draw circle on map
+        if (mMap == null || center == null) {
+            Toast.makeText(getApplicationContext(), "Error drawing circle", Toast.LENGTH_SHORT).show();
+            return;
+        }//if map null
+
+        mMap.clear();
+        Circle circle = mMap.addCircle(new CircleOptions()
+                .center(center)
+                .radius(radius)
+                .strokeWidth(5.0f)
+                .strokeColor(getResources().getColor(R.color.circleStroke))
+                .fillColor(getResources().getColor(R.color.circleFill)));
+
+    }//drawCircle
+
     //helper method for testing. this only adds the data to the array list of shared pref. It does not actually
     //turn it on. that is done later
 
@@ -251,63 +288,136 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         fenceArrayList.add(fence);
         MainActivity.saveArrayList(this, fenceArrayList);
 
-        Toast.makeText(getApplicationContext(), name + "Geofence added.", Toast.LENGTH_SHORT).show();
-
-        //TODO: clean the map and stay, or just simple finish the activity here
-//        finish();
+        addGeofence(fence);
     }//addFence
 
-    @Override
-    public void onMapReady(GoogleMap map) {
-        Log.v(TAG, "onMapReady called");
-        mMap = map;
+    //TODO: move all of this in the Fence class. just call getBuilder
+    private void addGeofence(Fence fence) {
+        //get the info from the fence
+        String id = fence.getId();
+        double lat = fence.getLatitude();
+        double lng = fence.getLongitude();
+        float radius = fence.getRadius();
+        long duration = fence.getDuration();
 
-        mMap.setOnCameraIdleListener(this);
+        //use switch for different types:
+        switch (fence.getType()) {
+            case Fence.FENCE_TYPE_ENTER:
+                //make the builder
+                Geofence.Builder geofenceBuilderEnter = new Geofence.Builder();
+                geofenceBuilderEnter.setRequestId(id)
+                        .setCircularRegion(lat, lng, radius)
+                        .setExpirationDuration(duration)
+                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
 
-        //disable map toolbar
-        UiSettings mUiSettings = mMap.getUiSettings();
-        mUiSettings.setMapToolbarEnabled(false);
+                //build a geofence object using the builder
+                Geofence geofenceEnter = geofenceBuilderEnter.build();
 
-        if (MainActivity.checkPermission(this)) {
-            mMap.setMyLocationEnabled(true);
-        }
+                GeofencingRequest.Builder requestBuilderEnter = new GeofencingRequest.Builder();
+                //this means that GEOFENCE_TRANSITION_ENTER should be triggered if the device is already inside the geofence
+                requestBuilderEnter.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+                requestBuilderEnter.addGeofence(geofenceEnter);
 
+                //build the Geofencing  request object using the builder
+                GeofencingRequest requestEnter = requestBuilderEnter.build();
 
-    }//onMapReady
+                if (MainActivity.checkPermission(this)) {
+                    mGeofencingClient.addGeofences(requestEnter, getGeofencePendingIntent())
+                            .addOnSuccessListener(this, new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(getApplicationContext(), "Geofence added", Toast.LENGTH_SHORT).show();
+                                    Log.v(TAG, "Geofence added");
+                                    finish();
+                                }
+                            })
+                            .addOnFailureListener(this, new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(getApplicationContext(), "Error adding geofence", Toast.LENGTH_SHORT).show();
+                                    Log.v(TAG, "Geofence adding failed", e);
+                                }
+                            });
+                }//if permission
+                break;
+            case Fence.FENCE_TYPE_EXIT:
+                //make the builder
+                Geofence.Builder geofenceBuilderExit = new Geofence.Builder();
+                geofenceBuilderExit.setRequestId(id)
+                        .setCircularRegion(lat, lng, radius)
+                        .setExpirationDuration(duration)
+                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
 
-    @Override
-    public void onCameraIdle() {
-        geoFenceLatLng = mMap.getCameraPosition().target;
-    }//onCameraIdle
+                //build a geofence object using the builder
+                Geofence geofenceExit = geofenceBuilderExit.build();
 
-    private void drawCircle(LatLng center, float radius) {
-        //draw circle on map
-        if (mMap == null || center == null) {
-            Toast.makeText(getApplicationContext(), "Error drawing circle", Toast.LENGTH_SHORT).show();
-            return;
-        }//if map null
+                GeofencingRequest.Builder requestBuilderExit = new GeofencingRequest.Builder();
+                //this means that GEOFENCE_TRANSITION_ENTER should be triggered if the device is already inside the geofence
+                requestBuilderExit.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+                requestBuilderExit.addGeofence(geofenceExit);
 
-        mMap.clear();
-        Circle circle = mMap.addCircle(new CircleOptions()
-                .center(center)
-                .radius(radius)
-                .strokeWidth(5.0f)
-                .strokeColor(getResources().getColor(R.color.circleStroke))
-                .fillColor(getResources().getColor(R.color.circleFill)));
+                //build the Geofencing  request object using the builder
+                GeofencingRequest requestExit = requestBuilderExit.build();
 
-    }//drawCircle
+                if (MainActivity.checkPermission(this)) {
+                    mGeofencingClient.addGeofences(requestExit, getGeofencePendingIntent())
+                            .addOnSuccessListener(this, new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(getApplicationContext(), "Geofence added", Toast.LENGTH_SHORT).show();
+                                    Log.v(TAG, "Geofence added");
+                                    finish();
+                                }
+                            })
+                            .addOnFailureListener(this, new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(getApplicationContext(), "Error adding geofence", Toast.LENGTH_SHORT).show();
+                                    Log.v(TAG, "Geofence adding failed", e);
+                                }
+                            });
+                }//if permission
+                break;
+                case Fence.FENCE_TYPE_ENTER_EXIT:
+                    //make the builder
+                    Geofence.Builder geofenceBuilderBoth = new Geofence.Builder();
+                    geofenceBuilderBoth.setRequestId(id)
+                            .setCircularRegion(lat, lng, radius)
+                            .setExpirationDuration(duration)
+                            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
 
-    /**
-     * Helper method for removing geoFence
-     */
-    private void removeGeofence() {
-        try {
-            mGeofencingClient.removeGeofences(mGeofenceIdList);
-            Toast.makeText(getApplicationContext(), "GeoFence Removed", Toast.LENGTH_SHORT).show();
-        } catch (IllegalArgumentException e) {
-            Toast.makeText(getApplicationContext(), "Geofenc ID does not exists", Toast.LENGTH_SHORT).show();
-        }//try/catch
-    }//removeGeofence
+                    //build a geofence object using the builder
+                    Geofence geofenceBoth = geofenceBuilderBoth.build();
+
+                    GeofencingRequest.Builder requestBuilderBoth = new GeofencingRequest.Builder();
+                    //this means that GEOFENCE_TRANSITION_ENTER should be triggered if the device is already inside the geofence
+                    requestBuilderBoth.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+                    requestBuilderBoth.addGeofence(geofenceBoth);
+
+                    //build the Geofencing  request object using the builder
+                    GeofencingRequest requestBoth = requestBuilderBoth.build();
+
+                    if (MainActivity.checkPermission(this)) {
+                        mGeofencingClient.addGeofences(requestBoth, getGeofencePendingIntent())
+                                .addOnSuccessListener(this, new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(getApplicationContext(), "Geofence added", Toast.LENGTH_SHORT).show();
+                                        Log.v(TAG, "Geofence added");
+                                        finish();
+                                    }
+                                })
+                                .addOnFailureListener(this, new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(getApplicationContext(), "Error adding geofence", Toast.LENGTH_SHORT).show();
+                                        Log.v(TAG, "Geofence adding failed", e);
+                                    }
+                                });
+                    }//if permission
+                    break;
+        }//switch
+    }//addGeofence
 
     /**
      * Helper method for adding geoFence
@@ -369,29 +479,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 .build());
 
     }//buildGeofence
-
-    //helper method for building geofences from hashmap
-//    private void buildGeofenceFromHash() {
-//        Log.v(TAG, "buildGeofence called");
-//        //add the geofences from the hashmap
-//        for (Map.Entry<String, LatLng> entry : Constants.MAY_23_FENCES.entrySet()) {
-//
-//            //add geofence
-//            mGeofenceList.add(new Geofence.Builder()
-//                    .setRequestId(entry.getKey())
-//                    .setCircularRegion(
-//                            entry.getValue().latitude,
-//                            entry.getValue().longitude,
-//                            Constants.RADIUS_IN_METERS)
-//                    //this is set to 12 hours now
-//                    .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
-//                    //for entry and exit
-//                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
-//                            Geofence.GEOFENCE_TRANSITION_EXIT)
-//                    //build
-//                    .build());
-//        }//for
-//    }//buildGeofenceFromHash
 
     //helper method for building the geofence request
     private GeofencingRequest getGeofencingRequest() {
