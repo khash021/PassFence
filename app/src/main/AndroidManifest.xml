@@ -3,6 +3,8 @@
     package="com.khashayarmortazavi.testgeofence">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
@@ -43,6 +45,17 @@
             android:name=".MapViewGeofenceActivity"
             android:label="View GeoFences"
             android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".SearchAddressActivity"
+            android:label="Search for address"
+            android:parentActivityName=".MainActivity"/>
+
+        <!--activity required to show ad overlay-->
+        <activity android:name="com.google.android.gms.ads.AdActivity"
+            android:configChanges=
+                "keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
+
     </application>
 
 </manifest>

@@ -15,6 +15,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
@@ -84,6 +86,16 @@ public class MainActivity extends AppCompatActivity {
                 removeAllFences(getApplicationContext());
             }
         });
+
+        ((Button) findViewById(R.id.button_address_map)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, SearchAddressActivity.class);
+                startActivity(i);
+            }
+        });
+
+        addBannerAd();
 
     }//onCreate
 
@@ -177,6 +189,18 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
     }//checkPermission
+
+    private void addBannerAd() {
+        //find the ad view
+        AdView adView = findViewById(R.id.ad_view);
+        //attach the listener first before loading it
+        adView.setAdListener(new ToastAdListener(this));
+        //create an ad request object using the builder
+        AdRequest adRequest = new AdRequest.Builder()
+                .build();
+        //load the ad request into the ad view
+        adView.loadAd(adRequest);
+    }//addBannerAd
 
 
 
