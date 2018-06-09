@@ -195,7 +195,7 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
             String type = properties[2];
 
             nameText.setText("Id: " + name);
-            durationText.setText("Expires: " + expiary);
+            durationText.setText(expiary);
             criteriaText.setText("Criteria: " + type);
         }//render
     }//CustomInfoWindowAdapter

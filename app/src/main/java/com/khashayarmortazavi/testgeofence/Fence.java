@@ -78,6 +78,10 @@ public class Fence {
         return type;
     }
 
+    public long getExpiaryTimeMilliSec() {
+        return expiaryTimeMilliSec;
+    }
+
     public boolean isActive() {
         return active;
     }
@@ -88,12 +92,14 @@ public class Fence {
         return output;
     }
 
-    public String getExpiary() {
+    private String getExpiary() {
         if (expiaryTimeMilliSec == -1) {
-            return "Never";
+            return "Expires: Never";
+        } else if (Calendar.getInstance().getTimeInMillis() > expiaryTimeMilliSec) {
+            return "Expired";
         } else {
             final DateFormat dateFormat = new SimpleDateFormat("MMM.dd 'at' HH:mm");
-            return dateFormat.format(expiaryTimeMilliSec);
+            return "Expires: " + dateFormat.format(expiaryTimeMilliSec);
         }
     }
 
