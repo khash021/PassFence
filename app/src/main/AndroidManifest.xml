@@ -3,8 +3,8 @@
     package="com.khashayarmortazavi.testgeofence">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -18,7 +18,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value= "AIzaSyBWgp0U35YooDdCWlYam7E_ziiVE9rYag8"/>
+            android:value="AIzaSyBWgp0U35YooDdCWlYam7E_ziiVE9rYag8" />
 
         <meta-data
             android:name="com.google.android.gms.version"
@@ -34,7 +34,7 @@
         <activity
             android:name=".AddGeofenceActivity"
             android:label="Add Geofence"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity"/>
 
         <activity
             android:name=".SaveArraylistActivity"
@@ -49,12 +49,12 @@
         <activity
             android:name=".SearchAddressActivity"
             android:label="Search for address"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName=".MainActivity" />
 
         <!--activity required to show ad overlay-->
-        <activity android:name="com.google.android.gms.ads.AdActivity"
-            android:configChanges=
-                "keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
+        <activity
+            android:name="com.google.android.gms.ads.AdActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />
 
     </application>
 

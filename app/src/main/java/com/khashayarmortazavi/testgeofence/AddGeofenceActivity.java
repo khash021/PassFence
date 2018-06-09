@@ -2,18 +2,25 @@ package com.khashayarmortazavi.testgeofence;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.SearchView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -41,7 +48,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+//TODO: add suggestion to the search
+//TODO: searchAddress method:  either only query one result and remove the bound
+        //or maybe add a large bound around the user so you would only show the results that is close to them
+        //I dont wanna see results in fucking Florida when I'm in vancouver
 
 
 public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
@@ -533,5 +548,120 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     }//onConnectionFailed
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //inflate the menu
+        getMenuInflater().inflate(R.menu.menu_search, menu);
+
+        //find the search item
+        final MenuItem searchItem = menu.findItem(R.id.action_search);
+
+        //check to make sure, it is not null
+        if (searchItem != null) {
+            //create a SearchView object using the search menu item
+            SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+            //add hint
+            searchView.setQueryHint("Enter address");
+            //this means it closes the keyboard when the user clicks the search button
+            searchView.setIconifiedByDefault(true);
+
+            //get a reference to the search box, so we can change the input type to cap words
+            int id1 = searchView.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+            EditText searchEditText = (EditText) searchView.findViewById(id1);
+            searchEditText.setInputType(InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+
+            // use this method for search process
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                //Called when the user submits the query. This could be due to a key press on the keyboard or
+                // due to pressing a submit button. The listener can override the standard behavior by returning true to
+                // indicate that it has handled the submit request. Otherwise return false to let the SearchView handle the
+                // submission by launching any associated intent.
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    // use this method when query submitted
+                    searchAddress(query);
+                    return false;
+                }
+
+                //Called when the query text is changed by the user.
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    // use this method for auto complete search process
+                    return false;
+                }
+            });//query text change listener
+        }//if
+        return true;
+    }//onCreateOptionsMenu
+
+    private void searchAddress(String query) {
+        //check for geocoder availability
+        if (!Geocoder.isPresent()) {
+            Log.v(TAG, "Geocoder not available");
+            Toast.makeText(this, "Geocoder not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        //Now we know it is available, Create geocoder to retrieve the location
+        // responses will be localized for the given Locale. (A Locale object represents a specific geographical,
+        // political, or cultural region. An operation that requires a Locale to perform its task is called locale-sensitive )
+
+        //create localized geocoder
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+
+
+        try {
+            //the second parameter is the number of max results, here we set it to 3
+            List<Address> addresses = geocoder.getFromLocationName(query, 3);
+            //check to make sure we got results
+            if (addresses.size() < 1) {
+                Toast.makeText(this, "No results found", Toast.LENGTH_SHORT).show();
+                Log.v(TAG, "No results");
+                return;
+            }//if
+
+            //check the map first
+            if (mMap == null) {
+                Log.v(TAG, "Map not ready");
+                return;
+            }
+
+            //make a builder to include all points
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+            //clear the map
+            mMap.clear();
+
+            //go through all the results and put them on map
+            int counter = 1;
+            for (Address result : addresses) {
+                LatLng latLng = new LatLng(result.getLatitude(), result.getLongitude());
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .position(latLng));
+                //include the marker
+                builder.include(latLng);
+                counter++;
+            }//for
+
+            //don't need to set bounds if there is only one result. Just move the camera
+            if (counter == 2) {
+                LatLng latLng = new LatLng(addresses.get(0).getLatitude(), addresses.get(0).getLongitude());
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13.0f));
+                return;
+            }
+
+            //since we have more than one results, we want to show them all, so we need the builder
+            //build the bounds builder
+            LatLngBounds bounds = builder.build();
+            //Setting the width and height of your screen (if not, sometimes the app crashes)
+            int width = getResources().getDisplayMetrics().widthPixels;
+            int height = getResources().getDisplayMetrics().heightPixels;
+            int padding = (int) (width * 0.2); // offset from edges of the map 20% of screen
+
+            mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));//this is the pixel padding
+
+        } catch (IOException e) {
+            Log.e(TAG, "Error getting location", e);
+        }//try/catch
+    }//searchAddress
 
 }//Activity
