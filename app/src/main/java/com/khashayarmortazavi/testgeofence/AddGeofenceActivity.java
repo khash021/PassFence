@@ -1,6 +1,7 @@
 package com.khashayarmortazavi.testgeofence;
 
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -53,6 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+//TODO: finish the activity on the results callback
 //TODO: add suggestion to the search
 //TODO: searchAddress method:  either only query one result and remove the bound
         //or maybe add a large bound around the user so you would only show the results that is close to them
@@ -187,8 +190,8 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
                 //check to see if we see the whole circle
                 LatLngBounds visibleBound = mMap.getProjection().getVisibleRegion().latLngBounds;
-                LatLng swCorner = MapViewGeofenceActivity.swCorner(geoFenceLatLng, mRadius);
-                LatLng neCorner = MapViewGeofenceActivity.neCorner(geoFenceLatLng, mRadius);
+                LatLng swCorner = MainActivity.swCorner(geoFenceLatLng, mRadius);
+                LatLng neCorner = MainActivity.neCorner(geoFenceLatLng, mRadius);
                 if (!visibleBound.contains(swCorner) || !visibleBound.contains(neCorner)) {
                     visibleBound.including(swCorner);
                     visibleBound.including(neCorner);
@@ -663,5 +666,15 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             Log.e(TAG, "Error getting location", e);
         }//try/catch
     }//searchAddress
+
+    private void hideKeyboard() {
+        //check to make sure no view has focus
+        View view = this.getCurrentFocus();
+
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }//hideKeyboard
 
 }//Activity

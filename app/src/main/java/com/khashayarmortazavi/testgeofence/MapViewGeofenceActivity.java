@@ -22,7 +22,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
 
@@ -105,8 +104,8 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
                     .fillColor(getResources().getColor(R.color.circleFill)));
 
             //get the bounds of the circle and add it to the builder
-            LatLng swCorner = swCorner(latLng, radius);
-            LatLng neCorner = neCorner(latLng, radius);
+            LatLng swCorner = MainActivity.swCorner(latLng, radius);
+            LatLng neCorner = MainActivity.neCorner(latLng, radius);
 
             builder.include(swCorner);
             builder.include(neCorner);
@@ -125,20 +124,7 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
 
     }//addGeofenceToMap
 
-    //helper methods to get the bounds of the cirlcle
-    public static LatLng swCorner(LatLng center, float radius ) {
-        double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
-        LatLng southwestCorner =
-                SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 225.0);
-        return southwestCorner;
-    }
 
-    public static LatLng neCorner (LatLng center, float radius ) {
-        double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
-        LatLng northeastCorner =
-                SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 45.0);
-        return northeastCorner;
-    }
 
     /**
      * This class is for customizing Info Windows

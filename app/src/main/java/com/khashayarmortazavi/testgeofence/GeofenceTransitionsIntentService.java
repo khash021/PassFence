@@ -24,7 +24,7 @@ import java.util.List;
 
 public class GeofenceTransitionsIntentService extends IntentService {
 
-    protected static final String TAG = "gfService";
+    protected static final String TAG = GeofenceTransitionsIntentService.class.getSimpleName();
 
     //Notification channels for Android 8 and higher
     private final static String CHANNEL_ID = "notification_channel";

@@ -17,8 +17,10 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -182,6 +184,21 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(context, "Geofences removed", Toast.LENGTH_SHORT).show();
         Log.v(TAG, "Geofences removed");
     }//removeAllFences
+
+    //helper methods to get the bounds of the circle (radius in meters)
+    public static LatLng swCorner(LatLng center, float radius ) {
+        double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
+        LatLng southwestCorner =
+                SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 225.0);
+        return southwestCorner;
+    }
+
+    public static LatLng neCorner (LatLng center, float radius ) {
+        double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
+        LatLng northeastCorner =
+                SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 45.0);
+        return northeastCorner;
+    }
 
 
     public static boolean checkPermission (Context context) {
