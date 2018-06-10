@@ -18,15 +18,22 @@
             android:id="@+id/button_geofence_activity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="12dp"
+            android:layout_margin="8dp"
             android:text="Add Geofence" />
 
         <Button
-            android:id="@+id/button_view_geofence_activity"
+            android:id="@+id/button_map_view_geofence"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="12dp"
+            android:layout_margin="8dp"
             android:text="View Geofence Map" />
+
+        <Button
+            android:id="@+id/button_list_view_geofence"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="View List Geofence" />
 
         <Button
             android:id="@+id/button_save_arraylist"
@@ -39,21 +46,21 @@
             android:id="@+id/button_address_map"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="12dp"
+            android:layout_margin="8dp"
             android:text="Search address" />
 
         <Button
             android:id="@+id/button_clear_list"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="12dp"
+            android:layout_margin="8dp"
             android:text="Erase all data" />
 
         <Button
             android:id="@+id/button_clear_fence"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="12dp"
+            android:layout_margin="8dp"
             android:text="Remove Geofences" />
     </LinearLayout>
 

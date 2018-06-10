@@ -51,6 +51,11 @@
             android:label="Search for address"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".ListViewGeofenceActivity"
+            android:label="List of Geofences"
+            android:parentActivityName=".MainActivity"/>
+
         <!--activity required to show ad overlay-->
         <activity
             android:name="com.google.android.gms.ads.AdActivity"

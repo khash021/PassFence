@@ -92,7 +92,8 @@ public class Fence {
         return output;
     }
 
-    private String getExpiary() {
+    //TODO: these two used to be private, change it back once you get rid of the simple list adapter
+    public String getExpiary() {
         if (expiaryTimeMilliSec == -1) {
             return "Expires: Never";
         } else if (Calendar.getInstance().getTimeInMillis() > expiaryTimeMilliSec) {
@@ -103,7 +104,7 @@ public class Fence {
         }
     }
 
-    private String getStringType() {
+    public String getStringType() {
         switch (type) {
             case FENCE_TYPE_ENTER:
                 return "Enter";

@@ -24,7 +24,6 @@ import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -68,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ((Button) findViewById(R.id.button_view_geofence_activity)).setOnClickListener(new View.OnClickListener() {
+        ((Button) findViewById(R.id.button_map_view_geofence)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(MainActivity.this, MapViewGeofenceActivity.class);
@@ -98,13 +97,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        ((Button) findViewById(R.id.button_list_view_geofence)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, ListViewGeofenceActivity.class);
+                startActivity(i);
+            }
+        });
+
         addBannerAd();
-
-        Locale[] locale = Locale.getAvailableLocales();
-
-
-
-
     }//onCreate
 
     public static ArrayList<Fence> loadArrayList(Context context) {
