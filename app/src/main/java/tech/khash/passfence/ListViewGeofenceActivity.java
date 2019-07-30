@@ -17,6 +17,9 @@ import java.util.Comparator;
 
 public class ListViewGeofenceActivity extends AppCompatActivity {
 
+    //TODO: set the sort type in the app bar (by name, or expiry, ascending or descending), maybe by a contextual menu
+    //TODO: add FAB for adding new item from this list
+
     private ArrayList<Fence> mFenceArrayList;
     private ListView mListView;
 
@@ -37,24 +40,9 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
             return;
         }
 
-//        sort the array list based on their name
-        Collections.sort(mFenceArrayList, new Comparator<Fence>() {
-            @Override
-            public int compare(Fence o1, Fence o2) {
-                return o1.getId().compareTo(o2.getId());
-            }
-        });
-
-        //this sort them base on their expiary
-//        Collections.sort(mFenceArrayList, new Comparator<Fence>() {
-//            @Override
-//            public int compare(Fence f1, Fence f2) {
-//                Long t1 = f1.getExpiaryTimeMilliSec();
-//                Long t2 = f2.getExpiaryTimeMilliSec();
-//
-//                return t1.compareTo(t2);
-//            }
-//        });
+        //sort the array list based on their name ascending
+//        sortNameAscending();
+        sortNameDescending();
 
         FenceArrayAdapter fenceArrayAdapter = new FenceArrayAdapter(this, new ArrayList<Fence>());
 
@@ -79,7 +67,56 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
             }
         });
 
+
+
     }//onCreate
+
+    //Helper method for sorting list based on their name (ascending)
+    private void sortNameAscending() {
+        Collections.sort(mFenceArrayList, new Comparator<Fence>() {
+            @Override
+            public int compare(Fence o1, Fence o2) {
+                return o1.getId().compareTo(o2.getId());
+            }
+        });
+    }//sortNameAscending
+
+    //Helper method for sorting list based on their name (ascending)
+    private void sortNameDescending() {
+        Collections.sort(mFenceArrayList, new Comparator<Fence>() {
+            @Override
+            public int compare(Fence o1, Fence o2) {
+                return o2.getId().compareTo(o1.getId());
+            }
+        });
+    }//sortNameAscending
+
+    ////Helper method for sorting list based on their expiray (ascending)
+    private void sortExpiryAscending() {
+        Collections.sort(mFenceArrayList, new Comparator<Fence>() {
+            @Override
+            public int compare(Fence f1, Fence f2) {
+                Long t1 = f1.getExpiaryTimeMilliSec();
+                Long t2 = f2.getExpiaryTimeMilliSec();
+
+                return t1.compareTo(t2);
+            }
+        });
+    }//sortExpiryAscending
+
+    ////Helper method for sorting list based on their expiray (descending)
+    private void sortExpiryDescending() {
+        Collections.sort(mFenceArrayList, new Comparator<Fence>() {
+            @Override
+            public int compare(Fence f1, Fence f2) {
+                Long t1 = f1.getExpiaryTimeMilliSec();
+                Long t2 = f2.getExpiaryTimeMilliSec();
+
+                return t2.compareTo(t1);
+            }
+        });
+    }//sortExpiryAscending
+
 
     private void showOptionsDialog(final Fence fence) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);

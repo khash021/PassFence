@@ -56,6 +56,8 @@ public class FenceArrayAdapter extends ArrayAdapter<Fence> {
         CheckBox activeCheckBox = (CheckBox) listItemView.findViewById(R.id.list_box_active);
 
         activeCheckBox.setChecked(fence.isActive());
+
+        //TODO: connect this to the actual Fence and update the geofences
         activeCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

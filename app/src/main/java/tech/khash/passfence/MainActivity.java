@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     //TODO: add modify geofence both from list and map view
     //TODO: fix the
     //TODO: move these constants
+    //TODO: remove string literals
     //used for saving/loading arraylist to sharedpref
     public final static String MY_PREF_ARRAY_KEY = "key";
     public final static String MY_PREF_NAME = "myPref";
