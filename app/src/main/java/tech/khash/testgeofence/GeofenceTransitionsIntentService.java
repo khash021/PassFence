@@ -1,4 +1,4 @@
-package com.khashayarmortazavi.testgeofence;
+package tech.khash.testgeofence;
 
 import android.app.IntentService;
 import android.app.NotificationChannel;

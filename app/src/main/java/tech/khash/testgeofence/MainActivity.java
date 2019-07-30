@@ -1,4 +1,4 @@
-package com.khashayarmortazavi.testgeofence;
+package tech.khash.testgeofence;
 
 import android.content.Context;
 import android.content.Intent;
@@ -27,9 +27,12 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    //TODO: move these constants
     //used for saving/loading arraylist to sharedpref
     public final static String MY_PREF_ARRAY_KEY = "key";
     public final static String MY_PREF_NAME = "myPref";
+
+    public final static String FENCE_EDIT_EXTRA_INTENT = "fence-edit-extra-intent";
 
     private final static String TAG = MainActivity.class.getSimpleName();
     private final static int REQUEST_CODE = 1;

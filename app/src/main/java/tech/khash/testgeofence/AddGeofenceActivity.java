@@ -1,4 +1,4 @@
-package com.khashayarmortazavi.testgeofence;
+package tech.khash.testgeofence;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -201,6 +201,11 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             }//onStopTrackingTouch
         });//SeekBarChangeListener
 
+        if (getIntent().hasExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT)) {
+            String fenceId = getIntent().getStringExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT);
+            setupModifyMode(fenceId);
+        }
+
 
     }//onCreate
 
@@ -281,6 +286,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         }
 
         //set the type
+        //TODO: fix this
         if (enter && exit) {
             type = Fence.FENCE_TYPE_ENTER_EXIT;
         } else if (enter && !exit) {
@@ -292,6 +298,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         }
 
         //now we have done all the checks, we can safely add the geofence to the list
+        //TODO: check for null pointer
         Fence fence = new Fence(name, geoFenceLatLng.latitude, geoFenceLatLng.longitude,
                 mRadius, mDuration, type);
 
@@ -339,7 +346,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                                 public void onSuccess(Void aVoid) {
                                     Toast.makeText(getApplicationContext(), "Geofence added", Toast.LENGTH_SHORT).show();
                                     Log.v(TAG, "Geofence added");
-                                    fence.setActive(true);
                                     finish();
                                 }
                             })
@@ -358,7 +364,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 geofenceBuilderExit.setRequestId(id)
                         .setCircularRegion(lat, lng, radius)
                         .setExpirationDuration(duration)
-                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
+                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT);
 
                 //build a geofence object using the builder
                 Geofence geofenceExit = geofenceBuilderExit.build();
@@ -390,12 +396,14 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                             });
                 }//if permission
                 break;
+
             case Fence.FENCE_TYPE_ENTER_EXIT:
                 //make the builder
                 Geofence.Builder geofenceBuilderBoth = new Geofence.Builder();
                 geofenceBuilderBoth.setRequestId(id)
                         .setCircularRegion(lat, lng, radius)
                         .setExpirationDuration(duration)
+                        //TODO: fix this
                         .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
 
                 //build a geofence object using the builder
@@ -676,5 +684,17 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }//hideKeyboard
+
+    //TODO: this needs to be better. either use arraylist method to search, or just send the fence in as input
+    private void setupModifyMode(String fenceId) {
+        ArrayList<Fence> fenceArrayList = MainActivity.loadArrayList(this);
+
+        for (Fence fence : fenceArrayList) {
+            if (fence.getId().equalsIgnoreCase(fenceId)) {
+                mNameText.setText(fenceId);
+                return;
+            }//if
+        }//for
+    }//setupModifyMode
 
 }//Activity

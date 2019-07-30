@@ -1,4 +1,4 @@
-package com.khashayarmortazavi.testgeofence;
+package tech.khash.testgeofence;
 
 import android.content.Context;
 import android.util.Log;

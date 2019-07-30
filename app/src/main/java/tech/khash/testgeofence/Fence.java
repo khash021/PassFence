@@ -1,4 +1,4 @@
-package com.khashayarmortazavi.testgeofence;
+package tech.khash.testgeofence;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -20,7 +20,6 @@ public class Fence {
     private float radius;
     private long duration;
     private int type;
-    private boolean active;
     private String durationString;
     private long expiaryTimeMilliSec;
 
@@ -36,9 +35,12 @@ public class Fence {
         this.latitude = lat;
         this.longitude = lng;
         this.radius = radius;
+        this.type = type;
+
         this.durationString = (duration == -1) ? "Never" : String.valueOf(duration);
         this.duration = (duration == -1) ? -1 : duration * HOUR_IN_MILLISEC;
-        this.type = type;
+
+
         if (duration == -1) {
             expiaryTimeMilliSec = -1;
         } else {
@@ -83,8 +85,16 @@ public class Fence {
     }
 
     public boolean isActive() {
-        return active;
-    }
+        if (expiaryTimeMilliSec == -1) {
+            return true;
+        } else {
+            if (expiaryTimeMilliSec > Calendar.getInstance().getTimeInMillis()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }//isActive
 
     public String getSnippet() {
         String output;
@@ -95,7 +105,7 @@ public class Fence {
     //TODO: these two used to be private, change it back once you get rid of the simple list adapter
     public String getExpiary() {
         if (expiaryTimeMilliSec == -1) {
-            return "Expires: Never";
+            return "Never";
         } else if (Calendar.getInstance().getTimeInMillis() > expiaryTimeMilliSec) {
             return "Expired";
         } else {
@@ -143,10 +153,6 @@ public class Fence {
 
     public void setType(int type) {
         this.type = type;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
     }
 
 

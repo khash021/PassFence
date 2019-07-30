@@ -1,11 +1,14 @@
-package com.khashayarmortazavi.testgeofence;
+package tech.khash.testgeofence;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -49,6 +52,16 @@ public class FenceArrayAdapter extends ArrayAdapter<Fence> {
         TextView idTextView = (TextView) listItemView.findViewById(R.id.list_text_id);
         TextView activeTextView = (TextView) listItemView.findViewById(R.id.list_text_active);
         TextView detailTextView = (TextView) listItemView.findViewById(R.id.list_text_detail);
+        //TODO: change this to toggle
+        CheckBox activeCheckBox = (CheckBox) listItemView.findViewById(R.id.list_box_active);
+
+        activeCheckBox.setChecked(fence.isActive());
+        activeCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Toast.makeText(getContext(), "New state is: " + isChecked, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         idTextView.setText(fence.getId());
 

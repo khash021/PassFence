@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.khashayarmortazavi.testgeofence">
+    package="tech.khash.testgeofence">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <service android:name=".GeofenceTransitionsIntentService" />
+        <service android:name="tech.khash.testgeofence.GeofenceTransitionsIntentService" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -24,37 +24,38 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".MainActivity">
+        <activity android:name="tech.khash.testgeofence.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".AddGeofenceActivity"
+            android:name="tech.khash.testgeofence.AddGeofenceActivity"
             android:label="Add Geofence"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName="tech.khash.testgeofence.MainActivity"/>
 
         <activity
-            android:name=".SaveArraylistActivity"
+            android:name="tech.khash.testgeofence.SaveArraylistActivity"
             android:label="Save ArrayList"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName="tech.khash.testgeofence.MainActivity" />
 
         <activity
-            android:name=".MapViewGeofenceActivity"
+            android:name="tech.khash.testgeofence.MapViewGeofenceActivity"
             android:label="View GeoFences"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName="tech.khash.testgeofence.MainActivity" />
 
         <activity
-            android:name=".SearchAddressActivity"
+            android:name="tech.khash.testgeofence.SearchAddressActivity"
             android:label="Search for address"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName="tech.khash.testgeofence.MainActivity" />
 
         <activity
-            android:name=".ListViewGeofenceActivity"
+            android:name="tech.khash.testgeofence.ListViewGeofenceActivity"
             android:label="List of Geofences"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName="tech.khash.testgeofence.MainActivity"/>
 
         <!--activity required to show ad overlay-->
         <activity

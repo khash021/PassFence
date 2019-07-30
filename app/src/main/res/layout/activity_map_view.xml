@@ -11,6 +11,6 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        tools:context="com.khashayarmortazavi.testgeofence.MapViewGeofenceActivity" />
+        tools:context="tech.khash.testgeofence.MapViewGeofenceActivity" />
 
 </LinearLayout>
