@@ -1,4 +1,4 @@
-package tech.khash.testgeofence;
+package tech.khash.passfence;
 
 import android.content.DialogInterface;
 import android.content.Intent;

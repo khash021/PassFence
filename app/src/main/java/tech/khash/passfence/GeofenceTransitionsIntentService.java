@@ -1,4 +1,4 @@
-package tech.khash.testgeofence;
+package tech.khash.passfence;
 
 import android.app.IntentService;
 import android.app.NotificationChannel;

@@ -1,4 +1,4 @@
-package tech.khash.testgeofence;
+package tech.khash.passfence;
 
 import com.google.android.gms.maps.model.LatLng;
 

@@ -1,4 +1,4 @@
-package tech.khash.testgeofence;
+package tech.khash.passfence;
 
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +27,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    //TODO: add modify geofence both from list and map view
+    //TODO: fix the
     //TODO: move these constants
     //used for saving/loading arraylist to sharedpref
     public final static String MY_PREF_ARRAY_KEY = "key";
