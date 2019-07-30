@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -22,6 +25,7 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
 
     private ArrayList<Fence> mFenceArrayList;
     private ListView mListView;
+    private FenceArrayAdapter fenceArrayAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,11 +44,7 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
             return;
         }
 
-        //sort the array list based on their name ascending
-//        sortNameAscending();
-        sortNameDescending();
-
-        FenceArrayAdapter fenceArrayAdapter = new FenceArrayAdapter(this, new ArrayList<Fence>());
+        fenceArrayAdapter = new FenceArrayAdapter(this, new ArrayList<Fence>());
 
         fenceArrayAdapter.addAll(mFenceArrayList);
 
@@ -67,9 +67,41 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
             }
         });
 
-
-
     }//onCreate
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        //get the inflater
+        MenuInflater inflater = getMenuInflater();
+
+        //inflate the menu
+        inflater.inflate(R.menu.menu_list, menu);
+
+        //You must return true for the menu to be displayed; if you return false it will not be shown.
+        return true;
+    }//onCreateOptionsMenu
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_sort_name_ascending:
+                sortNameAscending();
+                return true;
+            case R.id.action_sort_name_descending:
+                sortNameDescending();
+                return true;
+            case R.id.action_sort_expiry_ascending:
+                sortExpiryAscending();
+                return true;
+            case R.id.action_sort_expiry_descending:
+                sortExpiryDescending();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }//onOptionsItemSelected
+
 
     //Helper method for sorting list based on their name (ascending)
     private void sortNameAscending() {
@@ -79,6 +111,9 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
                 return o1.getId().compareTo(o2.getId());
             }
         });
+        //clear the list and give the new array list to the adapter
+        fenceArrayAdapter.clear();
+        fenceArrayAdapter.addAll(mFenceArrayList);
     }//sortNameAscending
 
     //Helper method for sorting list based on their name (ascending)
@@ -89,6 +124,9 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
                 return o2.getId().compareTo(o1.getId());
             }
         });
+        //clear the list and give the new array list to the adapter
+        fenceArrayAdapter.clear();
+        fenceArrayAdapter.addAll(mFenceArrayList);
     }//sortNameAscending
 
     ////Helper method for sorting list based on their expiray (ascending)
@@ -102,6 +140,9 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
                 return t1.compareTo(t2);
             }
         });
+        //clear the list and give the new array list to the adapter
+        fenceArrayAdapter.clear();
+        fenceArrayAdapter.addAll(mFenceArrayList);
     }//sortExpiryAscending
 
     ////Helper method for sorting list based on their expiray (descending)
@@ -115,6 +156,9 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
                 return t2.compareTo(t1);
             }
         });
+        //clear the list and give the new array list to the adapter
+        fenceArrayAdapter.clear();
+        fenceArrayAdapter.addAll(mFenceArrayList);
     }//sortExpiryAscending
 
 

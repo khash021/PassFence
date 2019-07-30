@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/action_sort_name_ascending"
+        android:title="Sort by name (Asc)"
+        app:showAsAction="never"
+        android:orderInCategory="10"/>
+
+    <item android:id="@+id/action_sort_name_descending"
+        android:title="Sort by name (Des)"
+        app:showAsAction="never"
+        android:orderInCategory="20"/>
+
+    <item android:id="@+id/action_sort_expiry_ascending"
+        android:title="Sort by expiry (Asc)"
+        app:showAsAction="never"
+        android:orderInCategory="30"/>
+
+    <item android:id="@+id/action_sort_expiry_descending"
+        android:title="Sort by expiry (Des)"
+        app:showAsAction="never"
+        android:orderInCategory="40"/>
+
+</menu>
