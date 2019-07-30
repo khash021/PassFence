@@ -404,7 +404,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                         .setCircularRegion(lat, lng, radius)
                         .setExpirationDuration(duration)
                         //TODO: fix this
-                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
+                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT);
 
                 //build a geofence object using the builder
                 Geofence geofenceBoth = geofenceBuilderBoth.build();
