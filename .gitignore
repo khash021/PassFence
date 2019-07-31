@@ -8,4 +8,4 @@
 /build
 /captures
 .externalNativeBuild
-AndroidManifest.xml
+app/src/main/AndroidManifest.xml
