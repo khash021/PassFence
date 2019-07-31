@@ -21,6 +21,7 @@ import java.util.ArrayList;
 public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.FenceViewHolder> {
 
     //TODO: add the delete functionality
+    //TODO: add functionality for the active/inactive checkbox
     //Removes toasts
     //list of data
     private final ArrayList<Fence> fenceArrayList;
