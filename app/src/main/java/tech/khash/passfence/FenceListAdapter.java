@@ -15,23 +15,34 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+/**
+ * Main adapter class to be used with RecyclerView in the ListViewGeofenceActivity
+ */
 public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.FenceViewHolder> {
 
+    //TODO: add the delete functionality
+    //Removes toasts
     //list of data
     private final ArrayList<Fence> fenceArrayList;
-    //inflator used for creating the view
+    //inflater used for creating the view
     private LayoutInflater inflater;
 
     private Context context;
 
-    //constructor
+    /**
+     * Public constructor
+     *
+     * @param context        : context of the parent activity
+     * @param fenceArrayList : ArrayList<Fence> containing data
+     */
     public FenceListAdapter(Context context, ArrayList<Fence> fenceArrayList) {
         this.context = context;
-        inflater =LayoutInflater.from(context);
+        inflater = LayoutInflater.from(context);
         this.fenceArrayList = fenceArrayList;
     }//constructor
 
 
+    //It inflates the item layout, and returns a ViewHolder with the layout and the adapter.
     @NonNull
     @Override
     public FenceListAdapter.FenceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
@@ -40,10 +51,16 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
         return new FenceViewHolder(itemView, this, context);
     }//onCreateViewHolder
 
+    /**
+     * This connects the data to the view holder. This is where it creates each item
+     *
+     * @param holder   : the custome view holder
+     * @param position : index of the item in the list
+     */
     @Override
     public void onBindViewHolder(@NonNull FenceListAdapter.FenceViewHolder holder, int position) {
         //Get the corresponding Fence object
-        Fence fence =fenceArrayList.get(position);
+        Fence fence = fenceArrayList.get(position);
 
         //extract data and set them
         holder.idTextView.setText(fence.getId());
@@ -69,8 +86,8 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
             View.OnLongClickListener {
 
         //our views
-        public final TextView idTextView, activeTextView, detailTextView;
-        public final CheckBox activeCheckBox;
+        final TextView idTextView, activeTextView, detailTextView;
+        final CheckBox activeCheckBox;
         final FenceListAdapter fenceListAdapter;
         private Context context;
 
@@ -91,6 +108,7 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
 
         }//FenceViewHolder
 
+        //This gets called when the user clicks on an item in the list
         @Override
         public void onClick(View v) {
             // Get the position of the item that was clicked.
@@ -102,6 +120,7 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
 
         }//onClick
 
+        //this gets called when the user Long Clicks the item and we will show the contextual menu (Dialog here )
         @Override
         public boolean onLongClick(View v) {
             // Get the position of the item that was clicked.
