@@ -1,7 +1,9 @@
 package tech.khash.passfence;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,6 +32,16 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
 
         //view containing the empty view
         LinearLayout emptyView = findViewById(R.id.empty_view);
+
+        //find the fab and set it up
+        FloatingActionButton fabAdd = findViewById(R.id.fab_add);
+        fabAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent addIntent = new Intent(getApplicationContext(), AddGeofenceActivity.class);
+                startActivity(addIntent);
+            }
+        });
 
         //get the arrayList, and set the empty view if the array is empty
         mFenceArrayList = MainActivity.loadArrayList(this);
