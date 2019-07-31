@@ -1,18 +1,15 @@
 package tech.khash.passfence;
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,52 +17,39 @@ import java.util.Comparator;
 
 public class ListViewGeofenceActivity extends AppCompatActivity {
 
-    //TODO: set the sort type in the app bar (by name, or expiry, ascending or descending), maybe by a contextual menu
     //TODO: add FAB for adding new item from this list
 
     private ArrayList<Fence> mFenceArrayList;
-    private ListView mListView;
-    private FenceArrayAdapter fenceArrayAdapter;
+
+    private FenceListAdapter adapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_view);
 
-        //find teh ListView and set it up
-        mListView = findViewById(R.id.list_view);
+        //view containing the empty view
+        LinearLayout emptyView = findViewById(R.id.empty_view);
 
-        //set an empty view
-        View emptyView = findViewById(R.id.empty_view);
-        mListView.setEmptyView(emptyView);
-
+        //get the arrayList, and set the empty view if the array is empty
         mFenceArrayList = MainActivity.loadArrayList(this);
         if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
+            emptyView.setVisibility(View.VISIBLE);
             return;
+        } else {
+            emptyView.setVisibility(View.GONE);
         }
 
-        fenceArrayAdapter = new FenceArrayAdapter(this, new ArrayList<Fence>());
+        // Get a handle to the RecyclerView.
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        // Create an adapter and supply the data to be displayed.
+        adapter = new FenceListAdapter(this, mFenceArrayList);
+        // Connect the adapter with the RecyclerView.
+        recyclerView.setAdapter(adapter);
+        // Give the RecyclerView a default layout manager.
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        fenceArrayAdapter.addAll(mFenceArrayList);
 
-        mListView.setAdapter(fenceArrayAdapter);
-
-        //set up on long click listener to delete the data point
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getApplicationContext(), "position = " + position + "\nid: " + id, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                showOptionsDialog(mFenceArrayList.get(position));
-
-                return false;
-            }
-        });
 
     }//onCreate
 
@@ -102,6 +86,7 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
         }
     }//onOptionsItemSelected
 
+    /*-------------------------HELPER METHODS ----------------------------------*/
 
     //Helper method for sorting list based on their name (ascending)
     private void sortNameAscending() {
@@ -111,9 +96,8 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
                 return o1.getId().compareTo(o2.getId());
             }
         });
-        //clear the list and give the new array list to the adapter
-        fenceArrayAdapter.clear();
-        fenceArrayAdapter.addAll(mFenceArrayList);
+        //notify the adapter that the data has changed, and it should update
+        adapter.notifyDataSetChanged();
     }//sortNameAscending
 
     //Helper method for sorting list based on their name (ascending)
@@ -124,9 +108,8 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
                 return o2.getId().compareTo(o1.getId());
             }
         });
-        //clear the list and give the new array list to the adapter
-        fenceArrayAdapter.clear();
-        fenceArrayAdapter.addAll(mFenceArrayList);
+        //notify the adapter that the data has changed, and it should update
+        adapter.notifyDataSetChanged();
     }//sortNameAscending
 
     ////Helper method for sorting list based on their expiray (ascending)
@@ -140,9 +123,8 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
                 return t1.compareTo(t2);
             }
         });
-        //clear the list and give the new array list to the adapter
-        fenceArrayAdapter.clear();
-        fenceArrayAdapter.addAll(mFenceArrayList);
+        //notify the adapter that the data has changed, and it should update
+        adapter.notifyDataSetChanged();
     }//sortExpiryAscending
 
     ////Helper method for sorting list based on their expiray (descending)
@@ -156,39 +138,9 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
                 return t2.compareTo(t1);
             }
         });
-        //clear the list and give the new array list to the adapter
-        fenceArrayAdapter.clear();
-        fenceArrayAdapter.addAll(mFenceArrayList);
+        //notify the adapter that the data has changed, and it should update
+        adapter.notifyDataSetChanged();
     }//sortExpiryAscending
-
-
-    private void showOptionsDialog(final Fence fence) {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-        dialogBuilder.setTitle(fence.getId());
-        String[] list = {"Edit", "Delete", "Cancel"};
-        dialogBuilder.setItems(list, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int index) {
-                switch (index) {
-                    case 0:
-                        //edit mode
-                        Intent editIntent = new Intent(ListViewGeofenceActivity.this, AddGeofenceActivity.class);
-                        editIntent.putExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT, fence.getId());
-                        startActivity(editIntent);
-                        break;
-                    case 1:
-                        //delete
-                        mFenceArrayList.remove(index);
-                        mListView.requestApplyInsets();
-                        break;
-                    case 2:
-                        //cancel
-                        break;
-                }//switch
-            }
-        });
-        dialogBuilder.create().show();
-    }//showBadLocationDialog
 
 
 }//class

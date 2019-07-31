@@ -60,6 +60,9 @@ import java.util.Locale;
 //TODO: searchAddress method:  either only query one result and remove the bound
         //or maybe add a large bound around the user so you would only show the results that is close to them
         //I dont wanna see results in fucking Florida when I'm in vancouver
+//TODO: when capturing the edit, make sure to add checkboxes and draw the circle accordingly.
+//TODO: make sure to warn the use if there are any unsaved data
+//TODO: change add to save when it is in edit and add the save code
 
 
 public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
@@ -79,8 +82,13 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     private float mRadius;
     private long mDuration;
     private EditText mNameText;
+    private TextView mRadiusText;
 
     private CheckBox mBoxEnter, mBoxExit;
+
+    private Spinner mDurationSpinner;
+
+    private String editIntentExtra;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,28 +119,26 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
         mNameText = findViewById(R.id.text_name);
 
-        Spinner durationSpinner = findViewById(R.id.spinner_duration);
+        mDurationSpinner = findViewById(R.id.spinner_duration);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
                 R.array.spinner_duration_array, android.R.layout.simple_spinner_dropdown_item);
         // Specify the layout to use when the list of choices appears
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
-        durationSpinner.setAdapter(spinnerAdapter);
+        mDurationSpinner.setAdapter(spinnerAdapter);
         //initialized the array at 12 hours and set the radius to that
-        durationSpinner.setSelection(7);
+        mDurationSpinner.setSelection(7);
         mDuration = 12;
         //set listener
-        durationSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mDurationSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 setDuration(position);
-
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
 
@@ -145,8 +151,8 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         //default at 50 meters
         seekBar.setProgress(5);
         mRadius = 50;
-        final TextView radiusTextView = findViewById(R.id.text_radius);
-        radiusTextView.setText("50");
+        mRadiusText = findViewById(R.id.text_radius);
+        mRadiusText.setText("50");
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -157,7 +163,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 //add the radius
                 String radius = String.valueOf(mRadius);
                 radius = radius.substring(0, radius.indexOf("."));
-                radiusTextView.setText(radius);
+                mRadiusText.setText(radius);
             }//onProgressChanged
 
             @Override
@@ -176,7 +182,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 //add the radius
                 String radiusString = String.valueOf(mRadius);
                 radiusString = radiusString.substring(0, radiusString.indexOf("."));
-                ((TextView) findViewById(R.id.text_radius)).setText(radiusString);
+                mRadiusText.setText(radiusString);
 
                 //add marker to center
                 if (geoFenceLatLng == null) {
@@ -202,8 +208,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         });//SeekBarChangeListener
 
         if (getIntent().hasExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT)) {
-            String fenceId = getIntent().getStringExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT);
-            setupModifyMode(fenceId);
+            editIntentExtra = getIntent().getStringExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT);
         }
 
 
@@ -224,6 +229,12 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
         if (MainActivity.checkPermission(this)) {
             mMap.setMyLocationEnabled(true);
+        }
+
+        //here if Intent is not empty, setup edit page
+        if (editIntentExtra != null) {
+            String fenceId = getIntent().getStringExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT);
+            setupModifyMode(fenceId);
         }
     }//onMapReady
 
@@ -543,7 +554,8 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         }
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
-        if (location != null) {
+        //only do this, if this is not the edit, otherwise don't move camera
+        if (location != null && editIntentExtra == null) {
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15.0f));
         }
 
@@ -685,13 +697,43 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         }
     }//hideKeyboard
 
-    //TODO: this needs to be better. either use arraylist method to search, or just send the fence in as input
+    //TODO: animate to location, set the spinner, set checkboxes
     private void setupModifyMode(String fenceId) {
         ArrayList<Fence> fenceArrayList = MainActivity.loadArrayList(this);
 
         for (Fence fence : fenceArrayList) {
             if (fence.getId().equalsIgnoreCase(fenceId)) {
+                //set the name
                 mNameText.setText(fenceId);
+                //get the type
+                int type = fence.getType();
+                switch (type) {
+                    case Fence.FENCE_TYPE_ENTER:
+                        mBoxEnter.setChecked(true);
+                        break;
+                    case Fence.FENCE_TYPE_EXIT:
+                        mBoxExit.setChecked(true);
+                        break;
+                    case Fence.FENCE_TYPE_ENTER_EXIT:
+                        mBoxExit.setChecked(true);
+                        mBoxEnter.setChecked(true);
+                        break;
+                }
+                //set radius
+                mRadius = fence.getRadius();
+                String radiusString = String.valueOf(mRadius);
+                radiusString = radiusString.substring(0, radiusString.indexOf("."));
+                mRadiusText.setText(radiusString);
+                //set spinner
+                int spinnerIndex = fence.getDurationIndex();
+                if (spinnerIndex != -1) {
+                    mDurationSpinner.setSelection(spinnerIndex);
+                }
+                //draw circle
+                drawCircle(fence.getLatLng(), fence.getRadius());
+                //animate camera to the location
+                //TODO: make this take into account the radius and zoom accordingly
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(fence.getLatLng(), 15.0f));
                 return;
             }//if
         }//for
