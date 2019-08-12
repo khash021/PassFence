@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
         //check for location permission and ask for it
         if (!checkPermission(this)) {
 
+            //TODO: show a dialog explaining the permission and then ask for it
+
             // No explanation needed; request the permission
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
@@ -210,14 +212,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static boolean checkPermission (Context context) {
         //check for location permission and ask for it
-        if (ContextCompat.checkSelfPermission(context,
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            return false;
-        } else {
-            return true;
-        }
+        return ContextCompat.checkSelfPermission(context,
+                android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }//checkPermission
 
     private void addBannerAd() {

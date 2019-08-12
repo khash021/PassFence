@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">PassFence</string>
 
-    <string name="hello_world">Hello world!</string>
+
     <string name="action_settings">Settings</string>
     <!-- Buttons strings -->
     <string name="add_geofences">Add geofences</string>
@@ -16,14 +16,9 @@
     <string name="not_connected">GoogleApiClient no yet connected. Try again.</string>
     <string name="geofence_not_available">Geofence service is not available now</string>
     <string name="geofence_too_many_geofences">Your app has registered too many geofences</string>
-    <string name="geofence_too_many_pending_intents">
-
-    </string>
-    <string name="unknown_geofence_error">
-    </string>
-    <string name="geofence_transition_invalid_type">
-
-    </string>
+    <string name="geofence_too_many_pending_intents">Too many pending intents</string>
+    <string name="unknown_geofence_error">Unknown Geofence Error</string>
+    <string name="geofence_transition_invalid_type">Invalid transition type</string>
     <string name="geofence_transition_notification_text">Click notification to return to app</string>
 
 
@@ -31,5 +26,15 @@
     <string name="banner_ad_unit_id_test">ca-app-pub-3940256099942544/6300978111</string>
     <string name="interstitial_ad_unit_id_test">ca-app-pub-3940256099942544/1033173712</string>
     <string name="no_saved_geofences">No saved Geofences!</string>
+
+    <!--Add Geofence class-->
+    <string name="name_add_fence">Name:</string>
+    <string name="name_add_fence_hint">Enter name here</string>
+    <string name="radius_add_fence">Radius (m)</string>
+    <string name="duration_add_fence">Duration (hr)</string>
+    <string name="enter">Enter</string>
+    <string name="exit">Exit</string>
+    <string name="add_geofence">Add GeoFence</string>
+
 
 </resources>

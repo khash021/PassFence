@@ -45,13 +45,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Name: " />
+                android:text="@string/name_add_fence" />
 
             <EditText
                 android:id="@+id/text_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Enter name here"
+                android:hint="@string/name_add_fence_hint"
                 android:inputType="textCapSentences" />
 
         </LinearLayout>
@@ -74,7 +74,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="15dp"
-                    android:text="Radius (m)" />
+                    android:text="@string/radius_add_fence" />
 
                 <TextView
                     android:id="@+id/text_radius"
@@ -95,7 +95,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="15dp"
-                    android:text="Duration (hr)" />
+                    android:text="@string/duration_add_fence" />
 
                 <Spinner
                     android:id="@+id/spinner_duration"
@@ -136,7 +136,7 @@
                 android:layout_marginLeft="30dp"
                 android:layout_marginRight="12dp"
                 android:layout_toEndOf="@+id/text_criteria"
-                android:text="Enter" />
+                android:text="@string/enter" />
 
             <CheckBox
                 android:id="@+id/check_exit"
@@ -144,7 +144,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignBaseline="@+id/check_enter"
                 android:layout_toEndOf="@+id/check_enter"
-                android:text="Exit" />
+                android:text="@string/exit" />
 
         </RelativeLayout>
 
@@ -159,7 +159,7 @@
                 android:id="@+id/button_add_geo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add GeoFence" />
+                android:text="@string/add_geofence" />
 
         </LinearLayout>
 

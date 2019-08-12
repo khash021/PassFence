@@ -698,6 +698,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     }//hideKeyboard
 
     //TODO: animate to location, set the spinner, set checkboxes
+    //TODO: when capturing the edit, make sure to add checkboxes and draw the circle accordingly.
     private void setupModifyMode(String fenceId) {
         ArrayList<Fence> fenceArrayList = MainActivity.loadArrayList(this);
 
