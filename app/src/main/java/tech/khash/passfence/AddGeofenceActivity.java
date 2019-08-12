@@ -2,14 +2,20 @@ package tech.khash.passfence;
 
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
@@ -32,7 +38,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
@@ -55,11 +60,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+//TODO: FUTURE
+    //TODO: add suggestion to the search
+
+
 //TODO: finish the activity on the results callback
-//TODO: add suggestion to the search
-//TODO: searchAddress method:  either only query one result and remove the bound
-        //or maybe add a large bound around the user so you would only show the results that is close to them
-        //I dont wanna see results in fucking Florida when I'm in vancouver
+
 //TODO: when capturing the edit, make sure to add checkboxes and draw the circle accordingly.
 //TODO: make sure to warn the use if there are any unsaved data
 //TODO: change add to save when it is in edit and add the save code
@@ -95,6 +101,11 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_geofence);
         Log.v(TAG, "onCreate Called");
+
+        //check and ask for location permission
+        if (!MainActivity.checkLocationPermission(this)) {
+            askLocationPermission();
+        }
 
         //Add map fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -227,7 +238,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         UiSettings mUiSettings = mMap.getUiSettings();
         mUiSettings.setMapToolbarEnabled(false);
 
-        if (MainActivity.checkPermission(this)) {
+        if (MainActivity.checkLocationPermission(this)) {
             mMap.setMyLocationEnabled(true);
         }
 
@@ -246,7 +257,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     private void drawCircle(LatLng center, float radius) {
         //draw circle on map
         if (mMap == null || center == null) {
-            Toast.makeText(getApplicationContext(), "Error drawing circle", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.error_drawing_circle), Toast.LENGTH_SHORT).show();
             return;
         }//if map null
 
@@ -272,13 +283,13 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
         //check to make sure we have name
         if (name.length() < 1) {
-            Toast.makeText(this, "Name required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.name_required_toast), Toast.LENGTH_SHORT).show();
             return;
         }
 
         //check to makes ure at least one checkbox is checked
         if (!enter && !exit) {
-            Toast.makeText(this, "Criteria required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.criteria_required_toast), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -291,13 +302,12 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 idArrayList.add(fence.getId().toLowerCase());
             }//for
             if (idArrayList.contains(name.toLowerCase())) {
-                Toast.makeText(this, "Name is already registered", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.duplicate_name_toast), Toast.LENGTH_SHORT).show();
                 return;
             }//if
         }
 
         //set the type
-        //TODO: fix this
         if (enter && exit) {
             type = Fence.FENCE_TYPE_ENTER_EXIT;
         } else if (enter && !exit) {
@@ -309,7 +319,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         }
 
         //now we have done all the checks, we can safely add the geofence to the list
-        //TODO: check for null pointer
         Fence fence = new Fence(name, geoFenceLatLng.latitude, geoFenceLatLng.longitude,
                 mRadius, mDuration, type);
 
@@ -322,132 +331,31 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
     //TODO: move all of this in the Fence class. just call getBuilder
     private void addGeofence(final Fence fence) {
-        //get the info from the fence
-        String id = fence.getId();
-        double lat = fence.getLatitude();
-        double lng = fence.getLongitude();
-        float radius = fence.getRadius();
-        long duration = fence.getDuration();
+        //check for permission first
+        if (!MainActivity.checkLocationPermission(this)) {
+            askLocationPermission();
+        }
 
-        //use switch for different types:
-        switch (fence.getType()) {
-            case Fence.FENCE_TYPE_ENTER:
-                //make the builder
-                Geofence.Builder geofenceBuilderEnter = new Geofence.Builder();
-                geofenceBuilderEnter.setRequestId(id)
-                        .setCircularRegion(lat, lng, radius)
-                        .setExpirationDuration(duration)
-                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER);
+        //get the Geofencing request object
+        GeofencingRequest geofencingRequest = fence.getGeofencingRequestObject();
 
-                //build a geofence object using the builder
-                Geofence geofenceEnter = geofenceBuilderEnter.build();
-
-                GeofencingRequest.Builder requestBuilderEnter = new GeofencingRequest.Builder();
-                //this means that GEOFENCE_TRANSITION_ENTER should be triggered if the device is already inside the geofence
-                requestBuilderEnter.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-                requestBuilderEnter.addGeofence(geofenceEnter);
-
-                //build the Geofencing  request object using the builder
-                GeofencingRequest requestEnter = requestBuilderEnter.build();
-
-                if (MainActivity.checkPermission(this)) {
-                    mGeofencingClient.addGeofences(requestEnter, getGeofencePendingIntent())
-                            .addOnSuccessListener(this, new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(getApplicationContext(), "Geofence added", Toast.LENGTH_SHORT).show();
-                                    Log.v(TAG, "Geofence added");
-                                    finish();
-                                }
-                            })
-                            .addOnFailureListener(this, new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(getApplicationContext(), "Error adding geofence", Toast.LENGTH_SHORT).show();
-                                    Log.v(TAG, "Geofence adding failed", e);
-                                }
-                            });
-                }//if permission
-                break;
-            case Fence.FENCE_TYPE_EXIT:
-                //make the builder
-                Geofence.Builder geofenceBuilderExit = new Geofence.Builder();
-                geofenceBuilderExit.setRequestId(id)
-                        .setCircularRegion(lat, lng, radius)
-                        .setExpirationDuration(duration)
-                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT);
-
-                //build a geofence object using the builder
-                Geofence geofenceExit = geofenceBuilderExit.build();
-
-                GeofencingRequest.Builder requestBuilderExit = new GeofencingRequest.Builder();
-                //this means that GEOFENCE_TRANSITION_ENTER should be triggered if the device is already inside the geofence
-                requestBuilderExit.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-                requestBuilderExit.addGeofence(geofenceExit);
-
-                //build the Geofencing  request object using the builder
-                GeofencingRequest requestExit = requestBuilderExit.build();
-
-                if (MainActivity.checkPermission(this)) {
-                    mGeofencingClient.addGeofences(requestExit, getGeofencePendingIntent())
-                            .addOnSuccessListener(this, new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(getApplicationContext(), "Geofence added", Toast.LENGTH_SHORT).show();
-                                    Log.v(TAG, "Geofence added");
-                                    finish();
-                                }
-                            })
-                            .addOnFailureListener(this, new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(getApplicationContext(), "Error adding geofence", Toast.LENGTH_SHORT).show();
-                                    Log.v(TAG, "Geofence adding failed", e);
-                                }
-                            });
-                }//if permission
-                break;
-
-            case Fence.FENCE_TYPE_ENTER_EXIT:
-                //make the builder
-                Geofence.Builder geofenceBuilderBoth = new Geofence.Builder();
-                geofenceBuilderBoth.setRequestId(id)
-                        .setCircularRegion(lat, lng, radius)
-                        .setExpirationDuration(duration)
-                        //TODO: fix this
-                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT);
-
-                //build a geofence object using the builder
-                Geofence geofenceBoth = geofenceBuilderBoth.build();
-
-                GeofencingRequest.Builder requestBuilderBoth = new GeofencingRequest.Builder();
-                //this means that GEOFENCE_TRANSITION_ENTER should be triggered if the device is already inside the geofence
-                requestBuilderBoth.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-                requestBuilderBoth.addGeofence(geofenceBoth);
-
-                //build the Geofencing  request object using the builder
-                GeofencingRequest requestBoth = requestBuilderBoth.build();
-
-                if (MainActivity.checkPermission(this)) {
-                    mGeofencingClient.addGeofences(requestBoth, getGeofencePendingIntent())
-                            .addOnSuccessListener(this, new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(getApplicationContext(), "Geofence added", Toast.LENGTH_SHORT).show();
-                                    Log.v(TAG, "Geofence added");
-                                    finish();
-                                }
-                            })
-                            .addOnFailureListener(this, new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(getApplicationContext(), "Error adding geofence", Toast.LENGTH_SHORT).show();
-                                    Log.v(TAG, "Geofence adding failed", e);
-                                }
-                            });
-                }//if permission
-                break;
-        }//switch
+        //register geofence
+        mGeofencingClient.addGeofences(geofencingRequest, getGeofencePendingIntent())
+                .addOnSuccessListener(this, new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.geofence_added_toast), Toast.LENGTH_SHORT).show();
+                        Log.v(TAG, "Geofence added");
+                        finish();
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.error_geofence_add), Toast.LENGTH_SHORT).show();
+                        Log.v(TAG, "Geofence adding failed", e);
+                    }
+                });
     }//addGeofence
 
     //helper method to define a PendingIntent that starts an IntentService
@@ -469,10 +377,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     @Override
     public void onResult(@NonNull Status status) {
         if (status.isSuccess()) {
-            Toast.makeText(
-                    this,
-                    "Geofences Added",
-                    Toast.LENGTH_SHORT
+            Toast.makeText(this, getString(R.string.geofence_added_toast), Toast.LENGTH_SHORT
             ).show();
         } else {
             // Get the status code for the error and log it using a user-friendly message.
@@ -549,7 +454,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         //move camera to users location
-        if (!MainActivity.checkPermission(this)) {
+        if (!MainActivity.checkLocationPermission(this)) {
             return;
         }
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
@@ -584,7 +489,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             //create a SearchView object using the search menu item
             SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
             //add hint
-            searchView.setQueryHint("Enter address");
+            searchView.setQueryHint(getString(R.string.enter_address_hint));
             //this means it closes the keyboard when the user clicks the search button
             searchView.setIconifiedByDefault(true);
 
@@ -621,7 +526,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         //check for geocoder availability
         if (!Geocoder.isPresent()) {
             Log.v(TAG, "Geocoder not available");
-            Toast.makeText(this, "Geocoder not available", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.geocoder_not_available_toast), Toast.LENGTH_SHORT).show();
             return;
         }
         //Now we know it is available, Create geocoder to retrieve the location
@@ -637,7 +542,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             List<Address> addresses = geocoder.getFromLocationName(query, 3);
             //check to make sure we got results
             if (addresses.size() < 1) {
-                Toast.makeText(this, "No results found", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.no_results_found_toast), Toast.LENGTH_SHORT).show();
                 Log.v(TAG, "No results");
                 return;
             }//if
@@ -739,5 +644,51 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             }//if
         }//for
     }//setupModifyMode
+
+    /**
+     * Helper method for showing a message to the user informing them about the benefits of turning on their
+     * location. and also can direct them to the location settings of their phone
+     */
+    private void askLocationPermission() {
+        //Create a dialog to inform the user about this feature's permission
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        //Chain together various setter methods to set the dialogConfirmation characteristics
+        builder.setMessage(R.string.permission_required_text_dialog).setTitle(R.string.permission_required_title_dialog);
+        // Add the buttons. We can call helper methods from inside the onClick if we need to
+        builder.setPositiveButton(R.string.permission_required_yes_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                //figure out if they have checked the check box for never ask again.
+                if (Build.VERSION.SDK_INT >= 23 && !shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    //This is the case when the user checked the box, so we send them to the settings
+                    openPermissionSettings();
+                } else {
+                    //This is the case that either is is older than DK 23, or they have not checked the box, so use the normal one
+                    ActivityCompat.requestPermissions(AddGeofenceActivity.this,
+                            new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                            MainActivity.LOCATION_PERMISSION_REQUEST_CODE);
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        //build and show dialog
+        builder.create().show();
+    }//askLocationPermission
+
+    /**
+     * Helper method for directing the user to the app's setting in their phone to turn on the permission
+     */
+    private void openPermissionSettings() {
+        Intent intent = new Intent();
+        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", getPackageName(), null);
+        intent.setData(uri);
+        startActivity(intent);
+    }//openPermissionSettings
 
 }//Activity

@@ -35,6 +35,20 @@
     <string name="enter">Enter</string>
     <string name="exit">Exit</string>
     <string name="add_geofence">Add GeoFence</string>
+    <string name="error_drawing_circle">Error drawing circle</string>
+
+    <string name="name_required_toast">Name required</string>
+    <string name="criteria_required_toast">Criteria required</string>
+    <string name="duplicate_name_toast">Name is already registered</string>
+    <string name="geofence_added_toast">Geofence added</string>
+    <string name="error_geofence_add">Error adding geofence</string>
+    <string name="enter_address_hint">Enter address</string>
+    <string name="geocoder_not_available_toast">Geocoder not available</string>
+    <string name="no_results_found_toast">No results found</string>
+    <string name="permission_required_text_dialog">This app requires user\'s location to work properly. This app does not store user\'s location.\nWould you like to turn it on now?</string>
+    <string name="permission_required_title_dialog">Permission required</string>
+    <string name="permission_required_yes_dialog">Give permission</string>
+    <string name="no">No</string>
 
 
 </resources>

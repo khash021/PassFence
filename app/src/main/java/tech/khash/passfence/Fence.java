@@ -1,5 +1,7 @@
 package tech.khash.passfence;
 
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.text.DateFormat;
@@ -102,7 +104,7 @@ public class Fence {
         return output;
     }
 
-    //TODO: these two used to be private, change it back once you get rid of the simple list adapter
+
     public String getExpiary() {
         if (expiaryTimeMilliSec == -1) {
             return "Never";
@@ -154,7 +156,48 @@ public class Fence {
             default:
                 return -1;
         }
-    }
+    }//getDurationIndex
+
+    //helper method for getting the Geofence Object
+    private Geofence getGeofenceObject() {
+        //make the builder
+        Geofence.Builder geofenceBuilder = new Geofence.Builder();
+        geofenceBuilder.setRequestId(id)
+                .setCircularRegion(latitude, longitude, radius)
+                .setExpirationDuration(duration)
+                .setTransitionTypes(getTransitionType());
+
+        //return Geofence
+        return geofenceBuilder.build();
+    }//getGeofenceObject
+
+    //helper method for getting the GeofencingRequest Object for registering geofence
+    public GeofencingRequest getGeofencingRequestObject() {
+        //create the builder
+        GeofencingRequest.Builder requestBuilder = new GeofencingRequest.Builder();
+
+        //this means that GEOFENCE_TRANSITION_ENTER should be triggered if the device is already inside the geofence
+        requestBuilder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+
+        requestBuilder.addGeofence(getGeofenceObject());
+
+        return requestBuilder.build();
+
+    }//getGeofencingRequestObject
+
+    //private helper method for getting transition type
+    private int getTransitionType() {
+        switch (type) {
+            case FENCE_TYPE_ENTER:
+                return Geofence.GEOFENCE_TRANSITION_ENTER;
+            case FENCE_TYPE_EXIT:
+                return Geofence.GEOFENCE_TRANSITION_EXIT;
+            case FENCE_TYPE_ENTER_EXIT:
+                default:
+                    return (Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT);
+        }//switch
+    }//getTransitionType
+
 
     /**
      * Setter methods

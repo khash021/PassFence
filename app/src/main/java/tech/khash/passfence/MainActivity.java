@@ -1,12 +1,17 @@
 package tech.khash.passfence;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -38,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     public final static String FENCE_EDIT_EXTRA_INTENT = "fence-edit-extra-intent";
 
     private final static String TAG = MainActivity.class.getSimpleName();
-    private final static int REQUEST_CODE = 1;
+    public final static int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     private AdView mAdView;
 
@@ -48,14 +53,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //check for location permission and ask for it
-        if (!checkPermission(this)) {
+        if (!checkLocationPermission(this)) {
 
             //TODO: show a dialog explaining the permission and then ask for it
 
             // No explanation needed; request the permission
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_CODE);
+                    LOCATION_PERMISSION_REQUEST_CODE);
         } //permission
 
 
@@ -210,11 +215,57 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public static boolean checkPermission (Context context) {
+    public static boolean checkLocationPermission(Context context) {
         //check for location permission and ask for it
         return ContextCompat.checkSelfPermission(context,
                 android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-    }//checkPermission
+    }//checkLocationPermission
+
+    /**
+     * Helper method for showing a message to the user informing them about the benefits of turning on their
+     * location. and also can direct them to the location settings of their phone
+     */
+    private void askLocationPermission() {
+        //Create a dialog to inform the user about this feature's permission
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        //Chain together various setter methods to set the dialogConfirmation characteristics
+        builder.setMessage(R.string.permission_required_text_dialog).setTitle(R.string.permission_required_title_dialog);
+        // Add the buttons. We can call helper methods from inside the onClick if we need to
+        builder.setPositiveButton(R.string.permission_required_yes_dialog, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                //figure out if they have checked the check box for never ask again.
+                if (Build.VERSION.SDK_INT >= 23 && !shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    //This is the case when the user checked the box, so we send them to the settings
+                    openPermissionSettings();
+                } else {
+                    //This is the case that either is is older than DK 23, or they have not checked the box, so use the normal one
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                            LOCATION_PERMISSION_REQUEST_CODE);
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        //build and show dialog
+        builder.create().show();
+    }//askLocationPermission
+
+    /**
+     * Helper method for directing the user to the app's setting in their phone to turn on the permission
+     */
+    private void openPermissionSettings() {
+        Intent intent = new Intent();
+        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", getPackageName(), null);
+        intent.setData(uri);
+        startActivity(intent);
+    }//openPermissionSettings
 
     private void addBannerAd() {
         //find the ad view

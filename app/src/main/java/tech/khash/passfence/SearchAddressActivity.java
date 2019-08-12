@@ -227,7 +227,7 @@ public class SearchAddressActivity extends AppCompatActivity implements OnMapRea
     public void onMapReady(GoogleMap map) {
         mMap = map;
 
-        if (MainActivity.checkPermission(this)) {
+        if (MainActivity.checkLocationPermission(this)) {
             mMap.setMyLocationEnabled(true);
         }
     }//onMapReady
@@ -270,7 +270,7 @@ public class SearchAddressActivity extends AppCompatActivity implements OnMapRea
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         //move camera to users location
-        if (!MainActivity.checkPermission(this)) {
+        if (!MainActivity.checkLocationPermission(this)) {
             return;
         }
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);

@@ -57,7 +57,7 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
         mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
 
         //check for location permission
-        if (MainActivity.checkPermission(this)) {
+        if (MainActivity.checkLocationPermission(this)) {
             mMap.setMyLocationEnabled(true);
         }//permission
 
