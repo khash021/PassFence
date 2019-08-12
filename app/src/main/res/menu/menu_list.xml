@@ -22,4 +22,9 @@
         app:showAsAction="never"
         android:orderInCategory="40"/>
 
+    <item android:id="@+id/action_delete_all_list"
+        android:title="Delete all"
+        app:showAsAction="never"
+        android:orderInCategory="50"/>
+
 </menu>

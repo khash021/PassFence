@@ -127,7 +127,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="16dp"
-                android:text="Criteria: " />
+                android:text="@string/criteria_add_fence" />
 
             <CheckBox
                 android:id="@+id/check_enter"

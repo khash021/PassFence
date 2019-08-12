@@ -49,6 +49,8 @@
     <string name="permission_required_title_dialog">Permission required</string>
     <string name="permission_required_yes_dialog">Give permission</string>
     <string name="no">No</string>
+    <string name="criteria_add_fence">Criteria:</string>
+    <string name="update">Update</string>
 
 
 </resources>

@@ -63,6 +63,10 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
         //Get the corresponding Fence object
         Fence fence = fenceArrayList.get(position);
 
+        if (fence == null) {
+            return;
+        }
+
         //extract data and set them
         holder.idTextView.setText(fence.getId());
 
@@ -146,12 +150,14 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
                     switch (index) {
                         case 0:
                             //edit mode
+                            //TODO: change to activity for results
                             Intent editIntent = new Intent(context, AddGeofenceActivity.class);
                             editIntent.putExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT, fence.getId());
                             context.startActivity(editIntent);
                             break;
                         case 1:
                             //delete
+                            //TODO: show a dialog and then delete
                             Toast.makeText(context, "DELETE", Toast.LENGTH_SHORT).show();
                             break;
                         case 2:

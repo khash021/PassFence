@@ -12,6 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,11 +20,14 @@ import java.util.Comparator;
 
 public class ListViewGeofenceActivity extends AppCompatActivity {
 
-    //TODO: add FAB for adding new item from this list
+    private static final String TAG = ListViewGeofenceActivity.class.getSimpleName();
 
     private ArrayList<Fence> mFenceArrayList;
-
     private FenceListAdapter adapter;
+    private RecyclerView recyclerView;
+
+    //TODO: update, notify change does not work!!!!!!!!!
+    //TODO: either get the list to update properly, use startActivityForResults, send back to Main, or just simply recrete
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,6 +43,7 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent addIntent = new Intent(getApplicationContext(), AddGeofenceActivity.class);
+                //TODO: change this to activity for results
                 startActivity(addIntent);
             }
         });
@@ -53,15 +58,13 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
         }
 
         // Get a handle to the RecyclerView.
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        recyclerView = findViewById(R.id.recycler_view);
         // Create an adapter and supply the data to be displayed.
         adapter = new FenceListAdapter(this, mFenceArrayList);
         // Connect the adapter with the RecyclerView.
         recyclerView.setAdapter(adapter);
         // Give the RecyclerView a default layout manager.
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-
 
     }//onCreate
 
@@ -93,12 +96,26 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
             case R.id.action_sort_expiry_descending:
                 sortExpiryDescending();
                 return true;
+            case R.id.action_delete_all_list:
+                //TODO: check to make sure the list is not empty
+                if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
+                    Toast.makeText(getApplicationContext(), "No registered geofence", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                deleteAllList();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }//onOptionsItemSelected
 
     /*-------------------------HELPER METHODS ----------------------------------*/
+
+    //helper method for removing all data
+    private void deleteAllList() {
+        //TODO: add a dialog for confirmation
+        MainActivity.removeAllFences(this);
+    }//deleteAllList
 
     //Helper method for sorting list based on their name (ascending)
     private void sortNameAscending() {

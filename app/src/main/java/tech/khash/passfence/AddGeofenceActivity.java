@@ -61,14 +61,13 @@ import java.util.List;
 import java.util.Locale;
 
 //TODO: FUTURE
-    //TODO: add suggestion to the search
+//TODO: add suggestion to the search
 
 
 //TODO: finish the activity on the results callback
 
-//TODO: when capturing the edit, make sure to add checkboxes and draw the circle accordingly.
+
 //TODO: make sure to warn the use if there are any unsaved data
-//TODO: change add to save when it is in edit and add the save code
 
 
 public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
@@ -89,13 +88,17 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     private long mDuration;
     private EditText mNameText;
     private TextView mRadiusText;
+    private Button mButtonAdd;
 
     private CheckBox mBoxEnter, mBoxExit;
+
+    private SeekBar seekBar;
 
     private Spinner mDurationSpinner;
 
     private String editIntentExtra;
 
+    private boolean editMode;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +108,12 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         //check and ask for location permission
         if (!MainActivity.checkLocationPermission(this)) {
             askLocationPermission();
+        }
+
+        //check to see whether this is add or update
+        if (getIntent().hasExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT)) {
+            editIntentExtra = getIntent().getStringExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT);
+            editMode = true;
         }
 
         //Add map fragment
@@ -120,11 +129,19 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         mGeofencingClient = LocationServices.getGeofencingClient(this);
 
         //buttons
-        Button addGeofenceButton = findViewById(R.id.button_add_geo);
-        addGeofenceButton.setOnClickListener(new View.OnClickListener() {
+        mButtonAdd = findViewById(R.id.button_add_geo);
+        mButtonAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addFence();
+                //Decide whether this is edit or add new
+                if (!editMode) {
+                    //create fence object
+                    Fence fence = createFenceObject();
+                    //add geofence
+                    addGeofence(fence);
+                } else {
+                    updatedFence();
+                }
             }
         });//addGeofenceButton
 
@@ -158,7 +175,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         mBoxEnter = findViewById(R.id.check_enter);
         mBoxExit = findViewById(R.id.check_exit);
 
-        SeekBar seekBar = findViewById(R.id.seek_bar);
+        seekBar = findViewById(R.id.seek_bar);
         //default at 50 meters
         seekBar.setProgress(5);
         mRadius = 50;
@@ -201,10 +218,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                     return;
                 }
 
-                //place marker
-                Marker marker = mMap.addMarker(new MarkerOptions()
-                        .position(geoFenceLatLng));
-
                 //check to see if we see the whole circle
                 LatLngBounds visibleBound = mMap.getProjection().getVisibleRegion().latLngBounds;
                 LatLng swCorner = MainActivity.swCorner(geoFenceLatLng, mRadius);
@@ -217,14 +230,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
             }//onStopTrackingTouch
         });//SeekBarChangeListener
-
-        if (getIntent().hasExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT)) {
-            editIntentExtra = getIntent().getStringExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT);
-        }
-
-
     }//onCreate
-
 
 
     @Override
@@ -245,7 +251,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         //here if Intent is not empty, setup edit page
         if (editIntentExtra != null) {
             String fenceId = getIntent().getStringExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT);
-            setupModifyMode(fenceId);
+            setupEditMode(fenceId);
         }
     }//onMapReady
 
@@ -257,7 +263,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     private void drawCircle(LatLng center, float radius) {
         //draw circle on map
         if (mMap == null || center == null) {
-            Toast.makeText(getApplicationContext(), getString(R.string.error_drawing_circle), Toast.LENGTH_SHORT).show();
+            Log.v(TAG, "Error drawing circle");
             return;
         }//if map null
 
@@ -273,8 +279,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
     //helper method for testing. this only adds the data to the array list of shared pref. It does not actually
     //turn it on. that is done later
-
-    private void addFence() {
+    private Fence createFenceObject() {
         //here we extract the Fence data
         String name = mNameText.getText().toString().trim();
         int type;
@@ -284,26 +289,26 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         //check to make sure we have name
         if (name.length() < 1) {
             Toast.makeText(this, getString(R.string.name_required_toast), Toast.LENGTH_SHORT).show();
-            return;
+            return null;
         }
 
         //check to makes ure at least one checkbox is checked
         if (!enter && !exit) {
             Toast.makeText(this, getString(R.string.criteria_required_toast), Toast.LENGTH_SHORT).show();
-            return;
+            return null;
         }
 
         //check against duplicate ids
         ArrayList<Fence> savedFenceArrayList = MainActivity.loadArrayList(this);
         //check to make sure the array is not null
-        if (savedFenceArrayList != null) {
+        if (savedFenceArrayList != null && !editMode) {
             ArrayList<String> idArrayList = new ArrayList<>();
             for (Fence fence : savedFenceArrayList) {
                 idArrayList.add(fence.getId().toLowerCase());
             }//for
             if (idArrayList.contains(name.toLowerCase())) {
                 Toast.makeText(this, getString(R.string.duplicate_name_toast), Toast.LENGTH_SHORT).show();
-                return;
+                return null;
             }//if
         }
 
@@ -322,14 +327,9 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         Fence fence = new Fence(name, geoFenceLatLng.latitude, geoFenceLatLng.longitude,
                 mRadius, mDuration, type);
 
-        ArrayList<Fence> fenceArrayList = new ArrayList<>();
-        fenceArrayList.add(fence);
-        MainActivity.saveArrayList(this, fenceArrayList);
+        return fence;
+    }//createFenceObject
 
-        addGeofence(fence);
-    }//addFence
-
-    //TODO: move all of this in the Fence class. just call getBuilder
     private void addGeofence(final Fence fence) {
         //check for permission first
         if (!MainActivity.checkLocationPermission(this)) {
@@ -344,8 +344,14 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 .addOnSuccessListener(this, new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        //add the fence to the array list of fences
+                        ArrayList<Fence> fenceArrayList = new ArrayList<>();
+                        fenceArrayList.add(fence);
+                        MainActivity.saveArrayList(getApplicationContext(), fenceArrayList);
+                        //show a toast
                         Toast.makeText(getApplicationContext(), getString(R.string.geofence_added_toast), Toast.LENGTH_SHORT).show();
                         Log.v(TAG, "Geofence added");
+                        //finish activity
                         finish();
                     }
                 })
@@ -357,6 +363,84 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                     }
                 });
     }//addGeofence
+
+    //helper method for updating the geofence
+    private void updatedFence() {
+        //first retrieve the fence object using id
+        String fenceId = getIntent().getStringExtra(MainActivity.FENCE_EDIT_EXTRA_INTENT);
+        //retrieve the array list of Fences
+        ArrayList<Fence> fenceArrayList = MainActivity.loadArrayList(this);
+
+        //find the Fence object we want to edit
+        Fence fence = null;
+        int fenceIndexInArray = -1;
+        for (Fence f : fenceArrayList) {
+            if (f.getId().equalsIgnoreCase(fenceId)) {
+                fence = f;
+                //get the index of our Fence object
+                fenceIndexInArray = fenceArrayList.indexOf(f);
+                break;
+            }//if
+        }//for
+
+        //check for null or -1 index
+        if (fence == null | fenceIndexInArray == -1) {
+            Log.wtf(TAG, "Error in locating the fence object");
+            return;
+        }
+
+        //create a new fence object
+        Fence updatedFence = createFenceObject();
+        if (updatedFence == null) {
+            Log.v(TAG, "Updated fence is null");
+            return;
+        }
+
+        //replace the old Fence object with the new one in the ArrayList
+        fenceArrayList.set(fenceIndexInArray, updatedFence);
+        //update app's arrayList
+        MainActivity.updateArrayList(this, fenceArrayList);
+
+        //Remove the old geofence
+        //remove method takes a list, so create a list with the fenceId to be removed
+        List<String> oldFenceIdList = new ArrayList<String>();
+        oldFenceIdList.add(fenceId);
+
+        mGeofencingClient.removeGeofences(oldFenceIdList).addOnSuccessListener(this, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.v(TAG, "Geofence removed successfully");
+            }
+        })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.v(TAG, "Geofence removal error");
+                    }
+                });
+
+
+        GeofencingRequest updatedGeofencingRequest = updatedFence.getGeofencingRequestObject();
+        //register geofence
+        mGeofencingClient.addGeofences(updatedGeofencingRequest, getGeofencePendingIntent())
+                .addOnSuccessListener(this, new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        //show a toast
+                        Toast.makeText(getApplicationContext(), getString(R.string.geofence_added_toast), Toast.LENGTH_SHORT).show();
+                        Log.v(TAG, "Geofence added");
+                        //finish activity
+                        finish();
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.error_geofence_add), Toast.LENGTH_SHORT).show();
+                        Log.v(TAG, "Geofence adding failed", e);
+                    }
+                });
+    }//updatedFence
 
     //helper method to define a PendingIntent that starts an IntentService
     private PendingIntent getGeofencePendingIntent() {
@@ -387,42 +471,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         }
 
     }//onResult
-
-    private void setDuration(int index) {
-        String[] durationArray = getResources().getStringArray(R.array.spinner_duration_array);
-        switch (index) {
-            case 0:
-                mDuration = Long.parseLong(durationArray[0]);
-                break;
-            case 1:
-                mDuration = Long.parseLong(durationArray[1]);
-                break;
-            case 2:
-                mDuration = Long.parseLong(durationArray[2]);
-                break;
-            case 3:
-                mDuration = Long.parseLong(durationArray[3]);
-                break;
-            case 4:
-                mDuration = Long.parseLong(durationArray[4]);
-                break;
-            case 5:
-                mDuration = Long.parseLong(durationArray[5]);
-                break;
-            case 6:
-                mDuration = Long.parseLong(durationArray[6]);
-                break;
-            case 7:
-                mDuration = Long.parseLong(durationArray[7]);
-                break;
-            case 8:
-                mDuration = Long.parseLong(durationArray[8]);
-                break;
-            case 9:
-                mDuration = -1;
-                break;
-        }//switch
-    }//setDuration
 
 
     protected synchronized void buildGoogleApiClient() {
@@ -604,46 +652,80 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
     //TODO: animate to location, set the spinner, set checkboxes
     //TODO: when capturing the edit, make sure to add checkboxes and draw the circle accordingly.
-    private void setupModifyMode(String fenceId) {
+    private void setupEditMode(String fenceId) {
+        //change the text of the button
+        mButtonAdd.setText(getString(R.string.update));
+
+        //retrieve the array list of Fences
         ArrayList<Fence> fenceArrayList = MainActivity.loadArrayList(this);
 
-        for (Fence fence : fenceArrayList) {
-            if (fence.getId().equalsIgnoreCase(fenceId)) {
-                //set the name
-                mNameText.setText(fenceId);
-                //get the type
-                int type = fence.getType();
-                switch (type) {
-                    case Fence.FENCE_TYPE_ENTER:
-                        mBoxEnter.setChecked(true);
-                        break;
-                    case Fence.FENCE_TYPE_EXIT:
-                        mBoxExit.setChecked(true);
-                        break;
-                    case Fence.FENCE_TYPE_ENTER_EXIT:
-                        mBoxExit.setChecked(true);
-                        mBoxEnter.setChecked(true);
-                        break;
-                }
-                //set radius
-                mRadius = fence.getRadius();
-                String radiusString = String.valueOf(mRadius);
-                radiusString = radiusString.substring(0, radiusString.indexOf("."));
-                mRadiusText.setText(radiusString);
-                //set spinner
-                int spinnerIndex = fence.getDurationIndex();
-                if (spinnerIndex != -1) {
-                    mDurationSpinner.setSelection(spinnerIndex);
-                }
-                //draw circle
-                drawCircle(fence.getLatLng(), fence.getRadius());
-                //animate camera to the location
-                //TODO: make this take into account the radius and zoom accordingly
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(fence.getLatLng(), 15.0f));
-                return;
+        //find the Fence object we want to edit
+        Fence fence = null;
+        for (Fence f : fenceArrayList) {
+            if (f.getId().equalsIgnoreCase(fenceId)) {
+                fence = f;
+                break;
             }//if
         }//for
-    }//setupModifyMode
+
+        //check for null fence (no search results, should never happen)
+        if (fence == null) {
+            Log.wtf(TAG, "Error finding fence object");
+            return;
+        }
+
+        //set the name
+        mNameText.setText(fence.getId());
+        //get the type
+        int type = fence.getType();
+        switch (type) {
+            case Fence.FENCE_TYPE_ENTER:
+                mBoxEnter.setChecked(true);
+                break;
+            case Fence.FENCE_TYPE_EXIT:
+                mBoxExit.setChecked(true);
+                break;
+            case Fence.FENCE_TYPE_ENTER_EXIT:
+                mBoxExit.setChecked(true);
+                mBoxEnter.setChecked(true);
+                break;
+        }//switch - type
+
+        //set radius
+        mRadius = fence.getRadius();
+        //convert to String
+        String radiusString = String.valueOf(mRadius);
+        //remove all decimals
+        radiusString = radiusString.substring(0, radiusString.indexOf("."));
+        //set the radius
+        mRadiusText.setText(radiusString);
+
+        //set the seekbar
+        //get the radius in float and divide by 10 (same thing we did in onCreate)
+        float radius = fence.getRadius();
+        int seekbarProgress = ((int) radius) / 10;
+        seekBar.setProgress(seekbarProgress);
+
+        //set spinner
+        int spinnerIndex = fence.getDurationIndex();
+        //-1 is the default which should never happen, because the values were set using the spinner
+        if (spinnerIndex != -1) {
+            mDurationSpinner.setSelection(spinnerIndex);
+        }
+
+        //draw circle
+        drawCircle(fence.getLatLng(), fence.getRadius());
+
+        //animate camera to the location
+        //TODO: make this take into account the radius and zoom accordingly
+        if (mMap != null) {
+            if (mRadius < 500) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(fence.getLatLng(), 15.0f));
+            } else {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(fence.getLatLng(), 14.0f));
+            }
+        }//null map
+    }//setupEditMode
 
     /**
      * Helper method for showing a message to the user informing them about the benefits of turning on their
@@ -690,5 +772,41 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         intent.setData(uri);
         startActivity(intent);
     }//openPermissionSettings
+
+    private void setDuration(int index) {
+        String[] durationArray = getResources().getStringArray(R.array.spinner_duration_array);
+        switch (index) {
+            case 0:
+                mDuration = Long.parseLong(durationArray[0]);
+                break;
+            case 1:
+                mDuration = Long.parseLong(durationArray[1]);
+                break;
+            case 2:
+                mDuration = Long.parseLong(durationArray[2]);
+                break;
+            case 3:
+                mDuration = Long.parseLong(durationArray[3]);
+                break;
+            case 4:
+                mDuration = Long.parseLong(durationArray[4]);
+                break;
+            case 5:
+                mDuration = Long.parseLong(durationArray[5]);
+                break;
+            case 6:
+                mDuration = Long.parseLong(durationArray[6]);
+                break;
+            case 7:
+                mDuration = Long.parseLong(durationArray[7]);
+                break;
+            case 8:
+                mDuration = Long.parseLong(durationArray[8]);
+                break;
+            case 9:
+                mDuration = -1;
+                break;
+        }//switch
+    }//setDuration
 
 }//Activity

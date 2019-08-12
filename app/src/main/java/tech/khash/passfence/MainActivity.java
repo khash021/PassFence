@@ -139,6 +139,11 @@ public class MainActivity extends AppCompatActivity {
 
     }//loadArrayList
 
+    /**
+     *  Helper method for saving the new arrayList to the the old one, it adds all of them.
+     * @param context : context
+     * @param inputArrayList : new arraylist to be added on top of the old one
+     */
     public static void saveArrayList(Context context, ArrayList<Fence> inputArrayList) {
 
         //get reference to shared pref
@@ -169,6 +174,30 @@ public class MainActivity extends AppCompatActivity {
         editor.putString(MY_PREF_ARRAY_KEY, json);
         editor.apply();
     }//saveArrayList
+
+    /**
+     * This updated the arraylist; i.e. it deletes the old one and replaces with the updated one
+     * @param context : context
+     * @param updatedArrayList : updated arraylist
+     */
+    public static void updateArrayList(Context context, ArrayList<Fence> updatedArrayList) {
+        //get reference to shared pref
+        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
+
+        //create Gson object
+        Gson gson = new Gson();
+
+        //convert arraylist
+        String json = gson.toJson(updatedArrayList);
+
+        //get the shared preference editor
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        //since we have added the old data to the new list, we can now delete the last entry
+        editor.remove(MY_PREF_ARRAY_KEY).apply();
+        //add the new updated list
+        editor.putString(MY_PREF_ARRAY_KEY, json);
+        editor.apply();
+    }//updateArrayList
 
     public static void eraseAllArrays (Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
