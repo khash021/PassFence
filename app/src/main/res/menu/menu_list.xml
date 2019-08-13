@@ -2,6 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item android:id="@+id/action_refresh"
+        android:title="Refresh"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_refresh_white"
+        android:orderInCategory="5"/>
+
     <item android:id="@+id/action_sort_name_ascending"
         android:title="Sort by name (Asc)"
         app:showAsAction="never"
@@ -22,7 +28,7 @@
         app:showAsAction="never"
         android:orderInCategory="40"/>
 
-    <item android:id="@+id/action_delete_all_list"
+    <item android:id="@+id/action_delete_all"
         android:title="Delete all"
         app:showAsAction="never"
         android:orderInCategory="50"/>

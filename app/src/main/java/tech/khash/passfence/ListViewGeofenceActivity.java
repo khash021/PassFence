@@ -84,6 +84,9 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_refresh:
+                recreate();
+                return true;
             case R.id.action_sort_name_ascending:
                 sortNameAscending();
                 return true;
@@ -96,7 +99,7 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
             case R.id.action_sort_expiry_descending:
                 sortExpiryDescending();
                 return true;
-            case R.id.action_delete_all_list:
+            case R.id.action_delete_all:
                 //TODO: check to make sure the list is not empty
                 if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
                     Toast.makeText(getApplicationContext(), "No registered geofence", Toast.LENGTH_SHORT).show();

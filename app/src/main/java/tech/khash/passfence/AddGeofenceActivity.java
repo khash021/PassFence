@@ -68,7 +68,7 @@ import java.util.Locale;
 //TODO: finish the activity on the results callback
 
 
-//TODO: make sure to warn the use if there are any unsaved data
+//TODO: minimize Toasts
 
 //TODO: change the toast for updated geofence to "updated" not "added"
 
