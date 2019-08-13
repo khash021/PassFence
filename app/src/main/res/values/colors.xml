@@ -11,4 +11,7 @@
     <!--colors for circles. using argb - first parameter is alpha-->
     <color name="circleStroke">#ff4285f4</color>
     <color name="circleFill">#6435b3e5</color>
+
+    <!--for notification light using argb-->
+    <color name="notificationLight">#8033cc33</color>
 </resources>

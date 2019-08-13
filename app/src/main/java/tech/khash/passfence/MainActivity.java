@@ -72,14 +72,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ((Button) findViewById(R.id.button_save_arraylist)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, SaveArraylistActivity.class);
-                startActivity(i);
-            }
-        });
-
         ((Button) findViewById(R.id.button_map_view_geofence)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

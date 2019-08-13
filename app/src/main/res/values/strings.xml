@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">PassFence</string>
 
+    <!--activity names-->
+    <string name="view_geofences_map">View GeoFences on Map</string>
+    <string name="list_of_geofences">List of Geofences</string>
+
 
     <string name="action_settings">Settings</string>
     <!-- Buttons strings -->
@@ -20,6 +24,11 @@
     <string name="unknown_geofence_error">Unknown Geofence Error</string>
     <string name="geofence_transition_invalid_type">Invalid transition type</string>
     <string name="geofence_transition_notification_text">Click notification to return to app</string>
+
+    <!--Notification-->
+    <string name="notification_channel_name">Pass Fence Notifications</string>
+    <string name="notification_channel_description">Pass Fence Notifications</string>
+    <string name="notification_message">Tap to manage password</string>
 
 
     <!--Ads stuff-->
@@ -87,6 +96,16 @@
     <!--Map View-->
     <string name="no_geofence_show_toast">No Geofences to show</string>
     <string name="id_colon">Id:</string>
+    <string name="refresh">Refresh</string>
+
+    <!--Menus-->
+    <string name="sort_by_name_asc">Sort by name (Asc)</string>
+    <string name="sort_by_name_des">Sort by name (Des)</string>
+    <string name="sort_by_expiry_asc">Sort by expiry (Asc)</string>
+    <string name="sort_by_expiry_des">Sort by expiry (Des)</string>
+    <string name="search">Search</string>
+
+
 
 
 </resources>

@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:name=".App"
@@ -25,7 +26,8 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name="tech.khash.passfence.MainActivity">
+        <activity android:name="tech.khash.passfence.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
@@ -35,27 +37,26 @@
         </activity>
         <activity
             android:name="tech.khash.passfence.AddGeofenceActivity"
-            android:label="Add Geofence"
+            android:label= "@string/add_geofence"
+            android:screenOrientation="portrait"
             android:parentActivityName="tech.khash.passfence.MainActivity"/>
 
         <activity
-            android:name="tech.khash.passfence.SaveArraylistActivity"
-            android:label="Save ArrayList"
-            android:parentActivityName="tech.khash.passfence.MainActivity" />
-
-        <activity
             android:name="tech.khash.passfence.MapViewGeofenceActivity"
-            android:label="View GeoFences"
+            android:label="@string/view_geofences_map"
+            android:screenOrientation="portrait"
             android:parentActivityName="tech.khash.passfence.MainActivity" />
 
         <activity
             android:name="tech.khash.passfence.SearchAddressActivity"
             android:label="Search for address"
+            android:screenOrientation="portrait"
             android:parentActivityName="tech.khash.passfence.MainActivity" />
 
         <activity
             android:name="tech.khash.passfence.ListViewGeofenceActivity"
-            android:label="List of Geofences"
+            android:label="@string/list_of_geofences"
+            android:screenOrientation="portrait"
             android:parentActivityName="tech.khash.passfence.MainActivity"/>
 
         <!--activity required to show ad overlay-->

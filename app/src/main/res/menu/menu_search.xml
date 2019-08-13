@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools" tools:context="tech.khash.passfence.AddGeofenceActivity">
 
     <item android:id="@+id/action_search"
-        android:title="Search"
+        android:title="@string/search"
         android:icon="@drawable/ic_search"
         app:showAsAction="always"
         app:actionViewClass="android.widget.SearchView" />

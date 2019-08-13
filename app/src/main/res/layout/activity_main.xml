@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:text="Add Geofence" />
+            android:text="@string/add_geofence" />
 
         <Button
             android:id="@+id/button_map_view_geofence"
@@ -34,13 +34,6 @@
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:text="View List Geofence" />
-
-        <Button
-            android:id="@+id/button_save_arraylist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="12dp"
-            android:text="Save Arraylist" />
 
         <Button
             android:id="@+id/button_address_map"
