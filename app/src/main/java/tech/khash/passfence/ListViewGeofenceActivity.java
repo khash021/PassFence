@@ -148,7 +148,6 @@ public class ListViewGeofenceActivity extends AppCompatActivity implements
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-
     }//onConnected
 
     @Override
@@ -158,8 +157,23 @@ public class ListViewGeofenceActivity extends AppCompatActivity implements
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }//onConnectionFailed
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!mGoogleApiClient.isConnecting() || !mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect();
+        }
+    }//onStart
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mGoogleApiClient.isConnecting() || mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }//onStop
 
     /*-------------------------HELPER METHODS ----------------------------------*/
 
@@ -262,7 +276,7 @@ public class ListViewGeofenceActivity extends AppCompatActivity implements
     private void showLongClickDialog(final Fence fence) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         dialogBuilder.setTitle(fence.getId());
-        String[] list = {"Edit", "Delete", "Cancel"};
+        String[] list = {getString(R.string.edit), getString(R.string.delete), getString(R.string.cancel)};
         dialogBuilder.setItems(list, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int index) {

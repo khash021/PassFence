@@ -68,6 +68,25 @@
     <string name="dialog_delete_fence">Are you sure you want to delete</string>
     <string name="question_mark" translatable="false">\?</string>
     <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+
+
+    <!--Adapter-->
+    <string name="active">Active</string>
+    <string name="inactive">Inactive</string>
+    <string name="expires_colon">Expires:</string>
+    <string name="criteria_colon">Criteria:</string>
+
+
+    <!--Fence class-->
+    <string name="never">Never</string>
+    <string name="expired">Expired</string>
+    <string name="enter_exit">Enter/Exit</string>
+    <string name="error">Error</string>
+
+    <!--Map View-->
+    <string name="no_geofence_show_toast">No Geofences to show</string>
+    <string name="id_colon">Id:</string>
 
 
 </resources>

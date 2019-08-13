@@ -764,8 +764,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         }
     }//hideKeyboard
 
-    //TODO: animate to location, set the spinner, set checkboxes
-    //TODO: when capturing the edit, make sure to add checkboxes and draw the circle accordingly.
     private void setupEditMode(String fenceId) {
         //change the text of the button
         mButtonAdd.setText(getString(R.string.update));
@@ -831,7 +829,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         drawCircle(fence.getLatLng(), fence.getRadius());
 
         //animate camera to the location
-        //TODO: make this take into account the radius and zoom accordingly
         if (mMap != null) {
             if (mRadius < 500) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(fence.getLatLng(), 15.0f));
@@ -951,5 +948,18 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 break;
         }//switch
     }//setDuration
+
+    /**
+     * Helper method for checking if the map is ready, used by other methods before performing
+     * their tasks
+     *
+     * @return true if the map is ready, false otherwise
+     */
+    private boolean checkMapReady() {
+        if (mMap == null) {
+            return false;
+        }//if
+        return true;
+    }//checkMapReady
 
 }//Activity

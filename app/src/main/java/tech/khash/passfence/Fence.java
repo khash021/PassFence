@@ -12,8 +12,6 @@ import java.util.Calendar;
  * Custom class for saving, and tracking geofence objects
  */
 
-//TODO: all add a removeGeofence object, easily get the id and remove it
-
 public class Fence {
 
     private String id;
@@ -39,7 +37,7 @@ public class Fence {
         this.radius = radius;
         this.type = type;
 
-        this.durationString = (duration == -1) ? "Never" : String.valueOf(duration);
+        this.durationString = (duration == -1) ? App.getContext().getString(R.string.never) : String.valueOf(duration);
         this.duration = (duration == -1) ? -1 : duration * HOUR_IN_MILLISEC;
 
 
@@ -107,25 +105,25 @@ public class Fence {
 
     public String getExpiary() {
         if (expiaryTimeMilliSec == -1) {
-            return "Never";
+            return App.getContext().getString(R.string.never);
         } else if (Calendar.getInstance().getTimeInMillis() > expiaryTimeMilliSec) {
-            return "Expired";
+            return App.getContext().getString(R.string.expired);
         } else {
             final DateFormat dateFormat = new SimpleDateFormat("MMM.dd 'at' HH:mm");
-            return "Expires: " + dateFormat.format(expiaryTimeMilliSec);
+            return App.getContext().getString(R.string.expires_colon) + " "  +dateFormat.format(expiaryTimeMilliSec);
         }
     }
 
     public String getStringType() {
         switch (type) {
             case FENCE_TYPE_ENTER:
-                return "Enter";
+                return App.getContext().getString(R.string.enter);
             case FENCE_TYPE_EXIT:
-                return "Exit";
+                return App.getContext().getString(R.string.exit);
             case FENCE_TYPE_ENTER_EXIT:
-                return "Enter/Exit";
+                return App.getContext().getString(R.string.enter_exit);
             default:
-                return "Error";
+                return App.getContext().getString(R.string.error);
         }//switch
     }//getStringType
 

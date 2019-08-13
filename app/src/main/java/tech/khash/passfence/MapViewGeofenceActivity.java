@@ -25,7 +25,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
-public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapReadyCallback {
+//TODO: bring up the info window when clicking circle
+
+//TODO: checkMapReady before all map operations
+
+public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapReadyCallback,
+        GoogleMap.OnCircleClickListener{
 
     private final String TAG = MapViewGeofenceActivity.class.getSimpleName();
 
@@ -33,6 +38,7 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
     private FusedLocationProviderClient mFusedLocationClient;
 
     private ArrayList<Fence> fenceArrayList;
+    private ArrayList<MarkerCircle> markerCircleArrayList;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,6 +72,9 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
         UiSettings mUiSettings = mMap.getUiSettings();
         mUiSettings.setMapToolbarEnabled(false);
 
+        //set click listener for the circles and callbacks will be send to this activity
+        mMap.setOnCircleClickListener(this);
+
         addGeofenceToMap();
     }//onMapReady
 
@@ -73,7 +82,7 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
 
         //check to make sure that the list is not null in case there is no fence added
         if (fenceArrayList == null) {
-            Toast.makeText(this, "No Geofences to show", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.no_geofence_show_toast), Toast.LENGTH_SHORT).show();
             Log.v(TAG, "Geofence ArrayList null");
             return;
         }//if
@@ -81,6 +90,15 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
         //create our bound object to show everything
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
+        //our ArrayList of MarkerCircle object. We add all markers and circle to this list in the
+        //following loopo, then loop through the list and draw them on the map
+        markerCircleArrayList = new ArrayList<MarkerCircle>();
+
+        //our marker option and circle option objects to make the marker and circle from
+        MarkerOptions markerOptions;
+        CircleOptions circleOptions;
+        Marker marker;
+        Circle circle;
         for (Fence fence : fenceArrayList) {
             //get the data from the fence object
             String name = fence.getId();
@@ -89,19 +107,31 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
             long duration = fence.getDuration();
             String snippet = fence.getSnippet();
 
-            Marker marker = mMap.addMarker(new MarkerOptions()
-                    .position(latLng)
+            //create the markeroption and marker
+            markerOptions = new MarkerOptions();
+            markerOptions.position(latLng)
                     .title(name)
                     .snippet(snippet)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-            );
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
-            Circle circle = mMap.addCircle(new CircleOptions()
-                    .center(latLng)
+            marker = mMap.addMarker(markerOptions);
+
+            //create circle options and circle
+            circleOptions =new CircleOptions();
+            circleOptions.center(latLng)
                     .radius(radius)
                     .strokeWidth(5.0f)
                     .strokeColor(getResources().getColor(R.color.circleStroke))
-                    .fillColor(getResources().getColor(R.color.circleFill)));
+                    .fillColor(getResources().getColor(R.color.circleFill));
+            circle = mMap.addCircle(circleOptions);
+            //set the circle clickable, onCircleClick will be called
+            circle.setClickable(true);
+            //set a tag on the circle to be retrieved on the circle click
+            circle.setTag(name);
+
+            //create a new object and add it to the arraylist
+            MarkerCircle markerCircle = new MarkerCircle(marker, circle);
+            markerCircleArrayList.add(markerCircle);
 
             //get the bounds of the circle and add it to the builder
             LatLng swCorner = MainActivity.swCorner(latLng, radius);
@@ -124,6 +154,26 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
 
     }//addGeofenceToMap
 
+    //This gets called, when the circle is clicked and we will show the corresponding marker's info window
+    @Override
+    public void onCircleClick(Circle circle) {
+        //get the name
+        String tag = (String) circle.getTag();
+
+        //find the corresponding markerCircle object and show the marker's info window
+        for (MarkerCircle markerCircle : markerCircleArrayList) {
+            //get the tag
+            String markerCircleTag = (String) markerCircle.getTag();
+            if (markerCircleTag.equalsIgnoreCase(tag)) {
+                //get the corresponding marker
+                Marker marker = markerCircle.getMarker();
+                //show the marker's info window
+                marker.showInfoWindow();
+                return;
+            }//if
+        }//for
+
+    }//onCircleClick
 
 
     /**
@@ -177,12 +227,15 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
             //TODO: add try/catch
             String[] properties = snippet.trim().split(",");
             String name = properties[0];
-            String expiary = properties[1];
+            String expiry = properties[1];
             String type = properties[2];
 
-            nameText.setText("Id: " + name);
-            durationText.setText(expiary);
-            criteriaText.setText("Criteria: " + type);
+            String text = getString(R.string.id_colon) + " " + name;
+            String expires = getString(R.string.expires_colon) + " " + expiry;
+            String criteria = getString(R.string.criteria_colon) + " " + type;
+            nameText.setText(text);
+            durationText.setText(expires);
+            criteriaText.setText(criteria);
         }//render
     }//CustomInfoWindowAdapter
 

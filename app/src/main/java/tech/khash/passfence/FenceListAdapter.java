@@ -18,7 +18,6 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
 
     private static final String TAG = FenceListAdapter.class.getSimpleName();
 
-    //TODO: add the delete functionality
     //TODO: add functionality for the active/inactive checkbox
     //Removes toasts
     //list of data
@@ -80,10 +79,11 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
         //extract data and set them
         holder.idTextView.setText(fence.getId());
 
-        String activeText = (fence.isActive()) ? "Active" : "Inactive";
+        String activeText = (fence.isActive()) ? context.getString(R.string.active) : context.getString(R.string.inactive);
         holder.activeTextView.setText(activeText);
 
-        String detail = "Expires: " + fence.getExpiary() + " - Criteria: " + fence.getStringType();
+        String detail = context.getString(R.string.expires_colon) + " " + fence.getExpiary() +
+                 " - " + context.getString(R.string.criteria_colon) + " " + fence.getStringType();
         holder.detailTextView.setText(detail);
 
         holder.activeCheckBox.setChecked(fence.isActive());
