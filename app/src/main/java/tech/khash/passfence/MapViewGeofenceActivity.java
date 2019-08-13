@@ -33,6 +33,8 @@ import java.util.ArrayList;
 
 //TODO: checkMapReady before all map operations
 
+//TODO: respond to info window clicks to delete/modify
+
 public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleMap.OnCircleClickListener {
 

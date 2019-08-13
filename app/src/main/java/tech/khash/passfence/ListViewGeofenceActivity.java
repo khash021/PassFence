@@ -161,21 +161,21 @@ public class ListViewGeofenceActivity extends AppCompatActivity implements
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     }//onConnectionFailed
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (!mGoogleApiClient.isConnecting() || !mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.connect();
-        }
-    }//onStart
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+//        if (!mGoogleApiClient.isConnecting() || !mGoogleApiClient.isConnected()) {
+//            mGoogleApiClient.connect();
+//        }
+//    }//onStart
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mGoogleApiClient.isConnecting() || mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
-        }
-    }//onStop
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        if (mGoogleApiClient.isConnecting() || mGoogleApiClient.isConnected()) {
+//            mGoogleApiClient.disconnect();
+//        }
+//    }//onStop
 
     /*-------------------------HELPER METHODS ----------------------------------*/
 
