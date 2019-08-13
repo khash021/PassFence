@@ -13,5 +13,5 @@
     <color name="circleFill">#6435b3e5</color>
 
     <!--for notification light using argb-->
-    <color name="notificationLight">#8033cc33</color>
+    <color name="notificationLight">#ffffff00</color>
 </resources>
