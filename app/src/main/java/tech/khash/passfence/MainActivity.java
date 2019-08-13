@@ -54,13 +54,8 @@ public class MainActivity extends AppCompatActivity {
 
         //check for location permission and ask for it
         if (!checkLocationPermission(this)) {
-
-            //TODO: show a dialog explaining the permission and then ask for it
-
-            // No explanation needed; request the permission
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
+            
+            askLocationPermission();
         } //permission
 
 
@@ -300,6 +295,7 @@ public class MainActivity extends AppCompatActivity {
         //load the ad request into the ad view
         mAdView.loadAd(adRequest);
     }//addBannerAd
+
 
     @Override
     protected void onResume() {
