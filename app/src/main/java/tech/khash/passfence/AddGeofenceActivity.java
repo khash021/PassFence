@@ -67,6 +67,8 @@ import java.util.Locale;
 
 //TODO: finish the activity on the results callback
 
+//TODO: keyboard is not hiding on enter
+
 
 //TODO: minimize Toasts
 
@@ -438,8 +440,8 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         //update app's arrayList
         MainActivity.updateArrayList(this, fenceArrayList);
 
-        //Remove the old geofence
-        //remove method takes a list, so create a list with the fenceId to be removed
+        //replace the old geofence
+        //replace method takes a list, so create a list with the fenceId to be removed
         List<String> oldFenceIdList = new ArrayList<String>();
         oldFenceIdList.add(fenceId);
 
@@ -478,6 +480,59 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                     }
                 });
     }//updatedFence
+
+    //helper method for deleting the geofence
+    private void deleteGeofence(String id) {
+        //retrieve the array list of Fences
+        ArrayList<Fence> fenceArrayList = MainActivity.loadArrayList(this);
+
+        //find the Fence object we want to edit
+        Fence fence = null;
+        int fenceIndexInArray = -1;
+        for (Fence f : fenceArrayList) {
+            if (f.getId().equalsIgnoreCase(id)) {
+                fence = f;
+                //get the index of our Fence object
+                fenceIndexInArray = fenceArrayList.indexOf(f);
+                break;
+            }//if
+        }//for
+
+        //check for null or -1 index
+        if (fence == null | fenceIndexInArray == -1) {
+            Log.wtf(TAG, "Error in locating the fence object");
+            return;
+        }
+
+        //remove geofence
+        //remove method takes a list, so create a list with the fenceId to be removed
+        List<String> oldFenceIdList = new ArrayList<String>();
+        oldFenceIdList.add(id);
+
+        mGeofencingClient.removeGeofences(oldFenceIdList).addOnSuccessListener(this, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.v(TAG, "Geofence removed successfully");
+                Toast.makeText(getApplicationContext(), getString(R.string.geofence_removed), Toast.LENGTH_SHORT).show();
+            }
+        })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.v(TAG, "Geofence removal error");
+                        Toast.makeText(getApplicationContext(), getString(R.string.error_remove_geofence), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        //remove the geofence from the main arraylist (return true if it was removed)
+        boolean removeSuccess = fenceArrayList.remove(fence);
+
+        //update the main arraylist
+        if (removeSuccess) {
+            //update app's arrayList
+            MainActivity.updateArrayList(this, fenceArrayList);
+        }
+    }//deleteGeofence
 
     //helper method to define a PendingIntent that starts an IntentService
     private PendingIntent getGeofencePendingIntent() {

@@ -61,6 +61,13 @@
     <string name="delete_all_dialog_msg">Are you sure you want to delete all registered geofences?</string>
     <string name="delete_all">Delete All</string>
     <string name="cancel">Cancel</string>
+    <string name="geofence_removed">Geofence removed</string>
+    <string name="error_remove_geofence">Error removing geofence</string>
+
+    <!--Delete geofence dialog-->
+    <string name="dialog_delete_fence">Are you sure you want to delete</string>
+    <string name="question_mark" translatable="false">\?</string>
+    <string name="delete">Delete</string>
 
 
 </resources>
