@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         //check for location permission and ask for it
         if (!checkLocationPermission(this)) {
-            
+
             askLocationPermission();
         } //permission
 

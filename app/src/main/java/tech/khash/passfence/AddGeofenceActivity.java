@@ -19,6 +19,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -67,8 +68,9 @@ import java.util.Locale;
 
 //TODO: finish the activity on the results callback
 
-//TODO: keyboard is not hiding on enter
+//TODO: add vibrate option here and use shared pref
 
+//TODO: add the name of the fence to the toast for added
 
 //TODO: minimize Toasts
 
@@ -158,6 +160,20 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             public void onClick(View v) {
                 //activate unsaved boolean
                 unsavedChanges = true;
+            }
+        });
+        //add this listener so when the user presses enter, this gets called and we can hide the keyboard
+        mNameText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                //check for the enter key
+                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
+                    //enter key has been pressed and we hide the keyboard
+                    hideKeyboard();
+                    //return true to let it know we handled the event
+                    return true;
+                }
+                return false;
             }
         });
 
