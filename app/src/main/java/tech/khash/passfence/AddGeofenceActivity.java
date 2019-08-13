@@ -612,7 +612,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         //click on the back button
         if (item.getItemId() == android.R.id.home) {
             if (unsavedChanges) {
-                showUnsavedChangesDialog(this);
+                showUnsavedChangesDialog();
                 //We return true, so the normal behavior doesn't continue (i.e. return to home screen)
                 return true;
             }
@@ -625,7 +625,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         if (!unsavedChanges) {
             super.onBackPressed();
         } else {
-            showUnsavedChangesDialog(this);
+            showUnsavedChangesDialog();
         }
     }//onBackPressed
 
@@ -787,13 +787,13 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     }//setupEditMode
 
     //Helper method for showing the dialog for unsaved data
-    private void showUnsavedChangesDialog(Context context) {
+    private void showUnsavedChangesDialog() {
 
         //create the builder
-        AlertDialog.Builder builder =new AlertDialog.Builder(context);
+        AlertDialog.Builder builder =new AlertDialog.Builder(this);
 
         //add message and button functionality
-        builder.setMessage(R.string.unsaved_changes_contact_dialog_msg)
+        builder.setMessage(R.string.unsaved_changes_dialog_msg)
                 .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

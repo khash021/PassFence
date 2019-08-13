@@ -1,9 +1,11 @@
 package tech.khash.passfence;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -116,8 +118,8 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
 
     //helper method for removing all data
     private void deleteAllList() {
-        //TODO: add a dialog for confirmation
-        MainActivity.removeAllFences(this);
+        //show a dialog for confirmation
+        showDeleteAllDialog();
     }//deleteAllList
 
     //Helper method for sorting list based on their name (ascending)
@@ -173,6 +175,33 @@ public class ListViewGeofenceActivity extends AppCompatActivity {
         //notify the adapter that the data has changed, and it should update
         adapter.notifyDataSetChanged();
     }//sortExpiryAscending
+
+    //Helper method for showing the dialog for erasing all data
+    private void showDeleteAllDialog() {
+
+        //create the builder
+        AlertDialog.Builder builder =new AlertDialog.Builder(this);
+
+        //add message and button functionality
+        builder.setMessage(R.string.delete_all_dialog_msg)
+                .setPositiveButton(R.string.delete_all, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Delete all
+                        MainActivity.removeAllFences(getApplicationContext());
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //close the dialog
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }//showUnsavedChangesDialog
 
 
 }//class
