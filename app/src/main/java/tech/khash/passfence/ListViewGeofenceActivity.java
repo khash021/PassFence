@@ -47,6 +47,8 @@ public class ListViewGeofenceActivity extends AppCompatActivity implements
     //TODO: update, notify change does not work!!!!!!!!!
     //TODO: either get the list to update properly, use startActivityForResults, send back to Main, or just simply recrete
 
+    //TODO: remove the active check box, or make it correspond to clicks
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

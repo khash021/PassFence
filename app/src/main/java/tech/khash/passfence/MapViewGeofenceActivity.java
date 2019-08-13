@@ -1,9 +1,13 @@
 package tech.khash.passfence;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,7 +34,7 @@ import java.util.ArrayList;
 //TODO: checkMapReady before all map operations
 
 public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapReadyCallback,
-        GoogleMap.OnCircleClickListener{
+        GoogleMap.OnCircleClickListener {
 
     private final String TAG = MapViewGeofenceActivity.class.getSimpleName();
 
@@ -117,7 +121,7 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
             marker = mMap.addMarker(markerOptions);
 
             //create circle options and circle
-            circleOptions =new CircleOptions();
+            circleOptions = new CircleOptions();
             circleOptions.center(latLng)
                     .radius(radius)
                     .strokeWidth(5.0f)
@@ -175,6 +179,29 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
 
     }//onCircleClick
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        //get the inflater
+        MenuInflater inflater = getMenuInflater();
+
+        //inflate the menu
+        inflater.inflate(R.menu.menu_map, menu);
+
+        //You must return true for the menu to be displayed; if you return false it will not be shown.
+        return true;
+    }//onCreateOptionsMenu
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_add_map) {
+            Intent intent = new Intent(MapViewGeofenceActivity.this, AddGeofenceActivity.class);
+            startActivity(intent);
+            return true;
+        }//if
+
+        return super.onOptionsItemSelected(item);
+    }//onOptionsItemSelected
 
     /**
      * This class is for customizing Info Windows
