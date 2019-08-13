@@ -52,5 +52,10 @@
     <string name="criteria_add_fence">Criteria:</string>
     <string name="update">Update</string>
 
+    <!--Unsaved Alert dialog-->
+    <string name="unsaved_changes_contact_dialog_msg">Discard your changes and quit?</string>
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep Editing</string>
+
 
 </resources>

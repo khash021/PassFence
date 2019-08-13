@@ -27,6 +27,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SearchView;
 import android.widget.SeekBar;
@@ -69,6 +70,8 @@ import java.util.Locale;
 
 //TODO: make sure to warn the use if there are any unsaved data
 
+//TODO: change the toast for updated geofence to "updated" not "added"
+
 
 public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, OnMapReadyCallback,
@@ -99,6 +102,8 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     private String editIntentExtra;
 
     private boolean editMode;
+
+    private boolean unsavedChanges = false;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,6 +151,13 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         });//addGeofenceButton
 
         mNameText = findViewById(R.id.text_name);
+        mNameText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //activate unsaved boolean
+                unsavedChanges = true;
+            }
+        });
 
         mDurationSpinner = findViewById(R.id.spinner_duration);
         // Create an ArrayAdapter using the string array and a default spinner layout
@@ -173,7 +185,21 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         //checkboxes
 
         mBoxEnter = findViewById(R.id.check_enter);
+        mBoxEnter.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                //activate unsaved boolean
+                unsavedChanges = true;
+            }
+        });
         mBoxExit = findViewById(R.id.check_exit);
+        mBoxExit.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                //activate unsaved boolean
+                unsavedChanges = true;
+            }
+        });
 
         seekBar = findViewById(R.id.seek_bar);
         //default at 50 meters
@@ -192,6 +218,9 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 String radius = String.valueOf(mRadius);
                 radius = radius.substring(0, radius.indexOf("."));
                 mRadiusText.setText(radius);
+
+                //activate unsaved boolean
+                unsavedChanges = true;
             }//onProgressChanged
 
             @Override
@@ -239,6 +268,14 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         mMap = map;
 
         mMap.setOnCameraIdleListener(this);
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                //activate unsaved boolean
+                unsavedChanges = true;
+            }
+        });
 
         //disable map toolbar
         UiSettings mUiSettings = mMap.getUiSettings();
@@ -570,6 +607,28 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         return true;
     }//onCreateOptionsMenu
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //click on the back button
+        if (item.getItemId() == android.R.id.home) {
+            if (unsavedChanges) {
+                showUnsavedChangesDialog(this);
+                //We return true, so the normal behavior doesn't continue (i.e. return to home screen)
+                return true;
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }//onOptionsItemSelected
+
+    @Override
+    public void onBackPressed() {
+        if (!unsavedChanges) {
+            super.onBackPressed();
+        } else {
+            showUnsavedChangesDialog(this);
+        }
+    }//onBackPressed
+
     private void searchAddress(String query) {
         //check for geocoder availability
         if (!Geocoder.isPresent()) {
@@ -726,6 +785,35 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             }
         }//null map
     }//setupEditMode
+
+    //Helper method for showing the dialog for unsaved data
+    private void showUnsavedChangesDialog(Context context) {
+
+        //create the builder
+        AlertDialog.Builder builder =new AlertDialog.Builder(context);
+
+        //add message and button functionality
+        builder.setMessage(R.string.unsaved_changes_contact_dialog_msg)
+                .setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //make the sdiscard boolean false and go to back pressed to follow normal hierarchical back
+                        unsavedChanges = false;
+                        //continue with back button
+                        onBackPressed();
+                    }
+                })
+                .setNegativeButton(R.string.keep_editing, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //close the dialog
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }//showUnsavedChangesDialog
 
     /**
      * Helper method for showing a message to the user informing them about the benefits of turning on their
