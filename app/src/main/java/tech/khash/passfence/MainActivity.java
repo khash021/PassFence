@@ -13,9 +13,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
@@ -35,7 +39,9 @@ public class MainActivity extends AppCompatActivity {
     //TODO: add modify geofence both from list and map view
     //TODO: fix the
     //TODO: move these constants
-    //TODO: remove string literals
+
+    //TODO: Edit and finalize Settings and its xml files
+
     //used for saving/loading arraylist to sharedpref
     public final static String MY_PREF_ARRAY_KEY = "key";
     public final static String MY_PREF_NAME = "myPref";
@@ -51,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         //check for location permission and ask for it
         if (!checkLocationPermission(this)) {
@@ -75,10 +83,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ((Button) findViewById(R.id.button_clear_list)).setOnClickListener(new View.OnClickListener() {
+        ((Button) findViewById(R.id.button_recreate)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                eraseAllArrays(getApplicationContext());
+                recreate();
             }
         });
 
@@ -105,8 +113,51 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        TextView textView = findViewById(R.id.text_pref);
+
+
         addBannerAd();
     }//onCreate
+
+    /**
+     * Inflates the menu, and adds items to the action bar if it is present.
+     *
+     * @param menu Menu to inflate.
+     * @return Returns true if the menu inflated.
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }//onCreateOptionsMenu
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //TODO: make the functionality of these
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+
+
+                break;
+            case R.id.action_rate:
+
+                return true;
+            case R.id.action_help:
+
+                return true;
+            case R.id.action_contact:
+
+                return true;
+            case R.id.action_privacy_policy:
+
+                return true;
+            case R.id.action_about:
+
+                return true;
+        }//switch
+        return super.onOptionsItemSelected(item);
+    }//onOptionsItemSelected
 
     public static ArrayList<Fence> loadArrayList(Context context) {
 
@@ -120,15 +171,17 @@ public class MainActivity extends AppCompatActivity {
         String response = sharedPreferences.getString(MY_PREF_ARRAY_KEY, "");
         //convert the json string back to Fence Array list and return it
         ArrayList<Fence> outputArrayList = gson.fromJson(response,
-                new TypeToken<List<Fence>>(){}.getType());
+                new TypeToken<List<Fence>>() {
+                }.getType());
 
         return outputArrayList;
 
     }//loadArrayList
 
     /**
-     *  Helper method for saving the new arrayList to the the old one, it adds all of them.
-     * @param context : context
+     * Helper method for saving the new arrayList to the the old one, it adds all of them.
+     *
+     * @param context        : context
      * @param inputArrayList : new arraylist to be added on top of the old one
      */
     public static void saveArrayList(Context context, ArrayList<Fence> inputArrayList) {
@@ -164,7 +217,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * This updated the arraylist; i.e. it deletes the old one and replaces with the updated one
-     * @param context : context
+     *
+     * @param context          : context
      * @param updatedArrayList : updated arraylist
      */
     public static void updateArrayList(Context context, ArrayList<Fence> updatedArrayList) {
@@ -186,14 +240,14 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }//updateArrayList
 
-    public static void eraseAllArrays (Context context) {
+    public static void eraseAllArrays(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(MY_PREF_ARRAY_KEY).apply();
         Toast.makeText(context, "Data erased", Toast.LENGTH_SHORT).show();
     }//eraseAllArray
 
-    public static void removeAllFences(Context context){
+    public static void removeAllFences(Context context) {
         ArrayList<Fence> fenceArrayList = loadArrayList(context);
         if (fenceArrayList == null) {
             Toast.makeText(context, "No Geofence", Toast.LENGTH_SHORT).show();
@@ -216,14 +270,14 @@ public class MainActivity extends AppCompatActivity {
     }//removeAllFences
 
     //helper methods to get the bounds of the circle (radius in meters)
-    public static LatLng swCorner(LatLng center, float radius ) {
+    public static LatLng swCorner(LatLng center, float radius) {
         double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
         LatLng southwestCorner =
                 SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 225.0);
         return southwestCorner;
     }
 
-    public static LatLng neCorner (LatLng center, float radius ) {
+    public static LatLng neCorner(LatLng center, float radius) {
         double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
         LatLng northeastCorner =
                 SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 45.0);

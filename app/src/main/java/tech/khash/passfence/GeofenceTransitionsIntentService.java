@@ -123,8 +123,8 @@ public class GeofenceTransitionsIntentService extends IntentService {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "notification_name";
-            String description = "notification_description";
+            CharSequence name = getString(R.string.notification_name);
+            String description = getString(R.string.notification_description);
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
@@ -162,7 +162,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(notificationDetails)
                 .setContentText(getString(R.string.notification_message))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 // Set the intent that will fire when the user taps the notification
                 .setContentIntent(normalPendingIntent)
                 //setAutoCancel(), which automatically removes the notification when the user taps it.
