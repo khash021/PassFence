@@ -193,7 +193,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
         // notificationId is a unique int for each notification that you must define
         notificationManager.notify(SIMPLE_NOTIFICATION_ID, builder.build());
-    }//testNotificationWithChannel
+    }//sendNotificationWithChannel
 
 }//GeofenceTransitionsIntentService
 

@@ -746,7 +746,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             mMap.clear();
 
             //go through all the results and put them on map
-            int counter = 1;
+            int counter = 0;
             for (Address result : addresses) {
                 LatLng latLng = new LatLng(result.getLatitude(), result.getLongitude());
                 Marker marker = mMap.addMarker(new MarkerOptions()
@@ -757,9 +757,9 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             }//for
 
             //don't need to set bounds if there is only one result. Just move the camera
-            if (counter == 2) {
+            if (counter  <= 1) {
                 LatLng latLng = new LatLng(addresses.get(0).getLatitude(), addresses.get(0).getLongitude());
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13.0f));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15.0f));
                 return;
             }
 
