@@ -8,12 +8,10 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -116,7 +114,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
         //check and ask for location permission
         if (!MainActivity.checkLocationPermission(this)) {
-            askLocationPermission();
+            MainActivity.askLocationPermission(this, this);
         }
 
         //check to see whether this is add or update
@@ -388,7 +386,13 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     private void addGeofence(final Fence fence) {
         //check for permission first
         if (!MainActivity.checkLocationPermission(this)) {
-            askLocationPermission();
+            MainActivity.askLocationPermission(this, this);
+        }
+
+        //check for null fence
+        if (fence == null) {
+            Log.v(TAG, "Geofence null");
+            return;
         }
 
         //get the Geofencing request object
@@ -477,24 +481,28 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
         GeofencingRequest updatedGeofencingRequest = updatedFence.getGeofencingRequestObject();
         //register geofence
-        mGeofencingClient.addGeofences(updatedGeofencingRequest, getGeofencePendingIntent())
-                .addOnSuccessListener(this, new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        //show a toast
-                        Toast.makeText(getApplicationContext(), getString(R.string.geofence_added_toast), Toast.LENGTH_SHORT).show();
-                        Log.v(TAG, "Geofence added");
-                        //finish activity
-                        finish();
-                    }
-                })
-                .addOnFailureListener(this, new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getApplicationContext(), getString(R.string.error_geofence_add), Toast.LENGTH_SHORT).show();
-                        Log.v(TAG, "Geofence adding failed", e);
-                    }
-                });
+        if (MainActivity.checkLocationPermission(this)) {
+            mGeofencingClient.addGeofences(updatedGeofencingRequest, getGeofencePendingIntent())
+                    .addOnSuccessListener(this, new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            //show a toast
+                            Toast.makeText(getApplicationContext(), getString(R.string.geofence_added_toast), Toast.LENGTH_SHORT).show();
+                            Log.v(TAG, "Geofence added");
+                            //finish activity
+                            finish();
+                        }
+                    })
+                    .addOnFailureListener(this, new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(getApplicationContext(), getString(R.string.error_geofence_add), Toast.LENGTH_SHORT).show();
+                            Log.v(TAG, "Geofence adding failed", e);
+                        }
+                    });
+        } else {
+            Toast.makeText(this, getString(R.string.toast_no_location_permission), Toast.LENGTH_SHORT).show();
+        }
     }//updatedFence
 
     //helper method for deleting the geofence
@@ -883,40 +891,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         dialog.show();
     }//showUnsavedChangesDialog
 
-    /**
-     * Helper method for showing a message to the user informing them about the benefits of turning on their
-     * location. and also can direct them to the location settings of their phone
-     */
-    private void askLocationPermission() {
-        //Create a dialog to inform the user about this feature's permission
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        //Chain together various setter methods to set the dialogConfirmation characteristics
-        builder.setMessage(R.string.permission_required_text_dialog).setTitle(R.string.permission_required_title_dialog);
-        // Add the buttons. We can call helper methods from inside the onClick if we need to
-        builder.setPositiveButton(R.string.permission_required_yes_dialog, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                //figure out if they have checked the check box for never ask again.
-                if (Build.VERSION.SDK_INT >= 23 && !shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-                    //This is the case when the user checked the box, so we send them to the settings
-                    openPermissionSettings();
-                } else {
-                    //This is the case that either is is older than DK 23, or they have not checked the box, so use the normal one
-                    ActivityCompat.requestPermissions(AddGeofenceActivity.this,
-                            new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                            MainActivity.LOCATION_PERMISSION_REQUEST_CODE);
-                }
-            }
-        });
-        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        //build and show dialog
-        builder.create().show();
-    }//askLocationPermission
 
     /**
      * Helper method for directing the user to the app's setting in their phone to turn on the permission
