@@ -1,12 +1,16 @@
 package tech.khash.passfence;
 
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +20,7 @@ import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -45,16 +50,23 @@ public class MainActivity extends AppCompatActivity {
 
     //TODO: Edit and finalize Settings and its xml files
 
-    //used for saving/loading arraylist to sharedpref
-    public final static String MY_PREF_ARRAY_KEY = "key";
-    public final static String MY_PREF_NAME = "myPref";
+    private final static String TAG = MainActivity.class.getSimpleName();
 
     public final static String FENCE_EDIT_EXTRA_INTENT = "fence-edit-extra-intent";
-
-    private final static String TAG = MainActivity.class.getSimpleName();
     public final static int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     private AdView mAdView;
+
+    //SharedPreference constants
+    public final static String ARRAY_PREF_KEY = "array_pref_key";
+    public static final String RINGTONE_PREF_KEY = "notification_ringtone_key";
+    public static final String VIBRATE_PREF_KEY = "notification_vibrate_key";
+    public static final String LED_PREF_KEY = "notification_led_key";
+    public static final String PRIORITY_PREF_KEY = "notification_priority_key";
+    public static final String COLOR_PICKER_PREF_KEY = "notification_color_picker_key";
+
+    //Notification channels for Android 8 and higher
+    public final static String CHANNEL_ID = "Notification Settings";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
 
             askLocationPermission(this, this);
         } //permission
+
+        createNotificationChannel();
 
 
         ((Button) findViewById(R.id.button_geofence_activity)).setOnClickListener(new View.OnClickListener() {
@@ -132,8 +146,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-
-
+                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(settingsIntent);
                 break;
             case R.id.action_rate:
                 Uri uri = Uri.parse("market://details?id=" + this.getPackageName());
@@ -189,11 +203,11 @@ public class MainActivity extends AppCompatActivity {
         //create Gson object
         Gson gson = new Gson();
         //get reference to the shared pref
-        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         //get the string from the preference (this will be empty string if there is no data in there
         //yet). as a result the output array list will be null, so we need to check for this in the
         //save array list when we pull the old data
-        String response = sharedPreferences.getString(MY_PREF_ARRAY_KEY, "");
+        String response = sharedPreferences.getString(ARRAY_PREF_KEY, "");
         //convert the json string back to Fence Array list and return it
         ArrayList<Fence> outputArrayList = gson.fromJson(response,
                 new TypeToken<List<Fence>>() {
@@ -212,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
     public static void saveArrayList(Context context, ArrayList<Fence> inputArrayList) {
 
         //get reference to shared pref
-        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         //create Gson object
         Gson gson = new Gson();
@@ -234,9 +248,9 @@ public class MainActivity extends AppCompatActivity {
         //get the shared preference editor
         SharedPreferences.Editor editor = sharedPreferences.edit();
         //since we have added the old data to the new list, we can now delete the last entry
-        editor.remove(MY_PREF_ARRAY_KEY).apply();
+        editor.remove(ARRAY_PREF_KEY).apply();
         //add the new updated list
-        editor.putString(MY_PREF_ARRAY_KEY, json);
+        editor.putString(ARRAY_PREF_KEY, json);
         editor.apply();
     }//saveArrayList
 
@@ -248,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public static void updateArrayList(Context context, ArrayList<Fence> updatedArrayList) {
         //get reference to shared pref
-        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         //create Gson object
         Gson gson = new Gson();
@@ -259,16 +273,16 @@ public class MainActivity extends AppCompatActivity {
         //get the shared preference editor
         SharedPreferences.Editor editor = sharedPreferences.edit();
         //since we have added the old data to the new list, we can now delete the last entry
-        editor.remove(MY_PREF_ARRAY_KEY).apply();
+        editor.remove(ARRAY_PREF_KEY).apply();
         //add the new updated list
-        editor.putString(MY_PREF_ARRAY_KEY, json);
+        editor.putString(ARRAY_PREF_KEY, json);
         editor.apply();
     }//updateArrayList
 
     public static void eraseAllArrays(Context context) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.remove(MY_PREF_ARRAY_KEY).apply();
+        editor.remove(ARRAY_PREF_KEY).apply();
         Toast.makeText(context, "Data erased", Toast.LENGTH_SHORT).show();
     }//eraseAllArray
 
@@ -330,6 +344,12 @@ public class MainActivity extends AppCompatActivity {
         builder.setPositiveButton(R.string.permission_required_yes_dialog, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
+
+//                ActivityCompat.requestPermissions(activity,
+//                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+//                        LOCATION_PERMISSION_REQUEST_CODE);
+
+                //TODO: not working properly, keep going to settings
                 //first check to see if the user has denied permission before
                 if (ContextCompat.checkSelfPermission(context,
                         android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
@@ -337,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
                     // shouldShowRequestPermissionRationale will return false. If that is false, and
                     //the build version is higher than 23 (that feature is only available to >= 23
                     //then send them to the
-                    if (Build.VERSION.SDK_INT >= 23 && !(activity.shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
+                    if (Build.VERSION.SDK_INT >= 23 && (activity.shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
                         //This is the case when the user checked the box, so we send them to the settings
                         openPermissionSettings(activity);
                     } else {
@@ -363,6 +383,41 @@ public class MainActivity extends AppCompatActivity {
         //build and show dialog
         builder.create().show();
     }//askLocationPermission
+
+    //helper method for creating notification channel required for Android 8 and higher. This needs
+    //to be called before trying to send notification
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = CHANNEL_ID;
+            String description = getString(R.string.notification_description);
+
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+
+            //enable light
+            channel.enableLights(true);
+
+            //vibrate
+            long[] vibratorPattern = {0, 100, 200, 200, 200, 300, 1000};
+            channel.setVibrationPattern(vibratorPattern);
+            channel.enableVibration(true);
+
+            //set default sound
+            Uri defaultUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            channel.setSound(defaultUri, new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION).build());
+
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this. You will send to the system's settings
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }//API 26 higher
+    }//createNotificationChannel
 
     /**
      * Helper method for directing the user to the app's setting in their phone to turn on the permission

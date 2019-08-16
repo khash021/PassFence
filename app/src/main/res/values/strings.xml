@@ -1,12 +1,13 @@
 <resources>
     <string name="app_name">PassFence</string>
 
+    <string name="package_name" translatable="false">tech.khash.passfence</string>
+
     <!--activity names-->
     <string name="view_geofences_map">View GeoFences on Map</string>
     <string name="list_of_geofences">List of Geofences</string>
-
-
     <string name="action_settings">Settings</string>
+
     <!-- Buttons strings -->
     <string name="add_geofences">Add geofences</string>
     <string name="remove_geofences">Remove geofences</string>
@@ -24,11 +25,6 @@
     <string name="unknown_geofence_error">Unknown Geofence Error</string>
     <string name="geofence_transition_invalid_type">Invalid transition type</string>
     <string name="geofence_transition_notification_text">Click notification to return to app</string>
-
-    <!--Notification-->
-    <string name="notification_channel_name">Pass Fence Notifications</string>
-    <string name="notification_channel_description">Pass Fence Notifications</string>
-    <string name="notification_message">Tap to manage password</string>
 
 
     <!--Ads stuff-->
@@ -107,8 +103,9 @@
     <string name="search">Search</string>
 
     <!--Notification channel-->
-    <string name="notification_name">Notification</string>
-    <string name="notification_description">Notification channel</string>
+    <string name="notification_name">Notification Settings</string>
+    <string name="notification_description">Pass Fence Notifications</string>
+
 
 
     <!--Main Activity Menu-->
@@ -124,16 +121,43 @@
     <string name="google_play_address" translatable="false">https://play.google.com/store/apps/details?id=tech.khash.passfence</string>
     <string name="contact_email" translatable="false">passfence@khash.tech</string>
 
+    <!--Notification-->
+    <string name="notification_message">Tap to manage password</string>
 
 
-                        <!--SETTINGS-->
-
-
+    <!--SETTINGS-->
     <string name="title_activity_settings">Settings</string>
 
-    <!-- Strings related to Settings -->
+    <!--Preference Keys-->
+    <string name="array_pref_key" translatable="false">array_pref_key</string>
+    <string name="ringtone_pref_key" translatable="false">notification_ringtone_key</string>
+    <string name="vibrate_pref_key" translatable="false">notification_vibrate_key</string>
+    <string name="led_pref_key" translatable="false">notification_led_key</string>
+    <string name="priority_pref_key" translatable="false">notification_priority_key</string>
+    <string name="color_picker_pref_key" translatable="false">notification_color_picker_key</string>
 
+    <string name="pick_blink_color">Pick Blink Color</string>
+    <string name="notifications">Notifications</string>
+    <string name="vibrate">Vibrate</string>
+    <string name="blink_light">Blink Light</string>
+    <string name="ringtone">Ringtone</string>
+    <string name="priority">Priority</string>
+    <string name="change_notification_settings_button">Change notification settings</string>
 
+    <!--priority-->
+    <string name="priority_unspecified">Unspecified</string>
+    <string name="priority_none">None</string>
+    <string name="priority_minimum">Minimum</string>
+    <string name="priority_low">Low</string>
+    <string name="priority_default">Default</string>
+    <string name="priority_high">High</string>
+    <string name="priority_maximum">Maximum</string>
+
+    <!--explanation dialog settings-->
+    <string name="settings_explanation_dialog_title">Android Oreo or higher phone</string>
+    <string name="settings_explanation_dialog_body">In these newer phones, notification settings (vibrate, sound, and light) need to be modified in app\'s notification channel.
+    \nYou may view the set values here; however, you need to go to the settings to modify them.</string>
+    <string name="got_to_settings">Go to Settings</string>
 
 
 </resources>

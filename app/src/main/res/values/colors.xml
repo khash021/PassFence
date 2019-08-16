@@ -14,4 +14,7 @@
 
     <!--for notification light using argb-->
     <color name="notificationLight">#ffffff00</color>
+
+    <color name="black">#000000</color>
+    <color name="blue_argb">#ff0000ff</color>
 </resources>

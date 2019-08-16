@@ -1,14 +1,14 @@
 package tech.khash.passfence;
 
 import android.app.IntentService;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.media.RingtoneManager;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -27,9 +27,8 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
     protected static final String TAG = GeofenceTransitionsIntentService.class.getSimpleName();
 
-    //Notification channels for Android 8 and higher
-    private final static String CHANNEL_ID = "pass_fence_notification_channel";
-    private final static int SIMPLE_NOTIFICATION_ID = 1;
+
+    public final static int NOTIFICATION_CHANNEL_ID = 1;
 
     public GeofenceTransitionsIntentService() {
         // Use the TAG to name the worker thread.
@@ -39,8 +38,6 @@ public class GeofenceTransitionsIntentService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        createNotificationChannel();
     }//onCreate
 
     //This is the meat of this class that handles the functionality. We pass in an Intent, intent,
@@ -117,30 +114,8 @@ public class GeofenceTransitionsIntentService extends IntentService {
         }
     } //getTransitionString
 
-    //helper method for creating notification channel required for Android 8 and higher. This needs
-    //to be called before trying to send notification
-    private void createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = getString(R.string.notification_name);
-            String description = getString(R.string.notification_description);
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-            channel.setDescription(description);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
-    }//createNotificationChannel
-
-
-
     //helper method for creating the notification builder
     private void sendNotificationWithChannel(String notificationDetails) {
-
-
         //NOTE: By default, the notification's text content is truncated to fit one line. If you want your
         // notification to be longer, you can enable an expandable notification by adding a style template with setStyle()
 
@@ -153,12 +128,12 @@ public class GeofenceTransitionsIntentService extends IntentService {
         // Get the PendingIntent containing the entire back stack
         PendingIntent normalPendingIntent =
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
+        //TODO: updating not working properly for now
 
         //create NotificationCompat.Builder object
         //NotificationCompat.Builder constructor requires that you provide a channel ID. This is
         // required for compatibility with Android 8.0 (API level 26) and higher, but is ignored by older versions
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MainActivity.CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(notificationDetails)
                 .setContentText(getString(R.string.notification_message))
@@ -168,31 +143,65 @@ public class GeofenceTransitionsIntentService extends IntentService {
                 //setAutoCancel(), which automatically removes the notification when the user taps it.
                 .setAutoCancel(true);
 
-        //get the default notification and set it
-        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        builder.setSound(defaultSoundUri);
+        //get the preferences
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        //TODO: get the vibrate from sharedPreferences
-        //set the vibrating pattern and vibrate (you need to add vibrate permission in manifest)
-        // Start without a delay
-        // Each element then alternates between vibrate, sleep, vibrate, sleep...
-        long[] vibratorPattern = {0, 100, 200, 200, 200, 300, 1000};
-        //set it on the notification
-        builder.setVibrate(vibratorPattern);
+        String ring = sharedPreferences.getString(MainActivity.RINGTONE_PREF_KEY, "def");
+        boolean vibrate = sharedPreferences.getBoolean(MainActivity.VIBRATE_PREF_KEY, true);
+        boolean colorBoolean = sharedPreferences.getBoolean(MainActivity.LED_PREF_KEY, true);
+        String priority = sharedPreferences.getString(MainActivity.PRIORITY_PREF_KEY, "def");
+        int colorInt = sharedPreferences.getInt(MainActivity.COLOR_PICKER_PREF_KEY, -1);
+        Log.v(TAG, "Vibrate : " + String.valueOf(vibrate) + "\nRingtone: " + ring
+                + "\nColor: " + colorInt + "\nPriority : " + priority);
 
-        //set notification light
-        //Set the argb(Alpha(opacity) Red Green Blue) value that you would like the LED on the device to blink, as well as the rate.
-        // The rate is specified in terms of the number of milliseconds to be on and then the number of milliseconds to be off.
+        //set the details, these only work for lower devices, Oreo and higher gets this from channel
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            //set priority
+            if (priority != null && !priority.equals("def")) {
+                builder.setPriority(Integer.valueOf(priority));
+            }
 
-        int argb = App.getContext().getResources().getColor(R.color.notificationLight);
-        builder.setLights(argb, 500, 500);
+            //set ringtone
+            if (ring != null && !ring.equals("def")) {
+                //different ways for APIs
+                Uri ringUri = Uri.parse(ring);
+                builder.setSound(ringUri);
+            }//ring
 
+            //set vibrate
+            if (vibrate) {
+                //set the vibrating pattern and vibrate (you need to add vibrate permission in manifest)
+                // Start without a delay
+                // Each element then alternates between vibrate, sleep, vibrate, sleep...
+                long[] vibratorPattern = {0, 100, 200, 200, 200, 300, 1000};
+                //set it on the notification
+                builder.setVibrate(vibratorPattern);
+            }//vibrate
+
+            //set notification light
+            //Set the argb(Alpha(opacity) Red Green Blue) value that you would like the LED on the device to blink, as well as the rate.
+            // The rate is specified in terms of the number of milliseconds to be on and then the number of milliseconds to be off.
+            //get rid of the first # and then add ff for alpha
+            if (colorBoolean) {
+                if (colorInt != -1) {
+                    String colorStringHex = Integer.toHexString(colorInt);
+                    int ledColor = Color.parseColor("#" + colorStringHex);
+                    Log.v(TAG, "LED color : " + ledColor);
+                    try {
+                        builder.setLights(ledColor, 500, 500);
+                    } catch (Exception e) {
+                        Log.v(TAG, "Error setting color" + e);
+                    }//tr-catch
+                }
+            }//color
+
+        }//if - Lower Oreo
 
         //show the notification
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
 
         // notificationId is a unique int for each notification that you must define
-        notificationManager.notify(SIMPLE_NOTIFICATION_ID, builder.build());
+        notificationManager.notify(NOTIFICATION_CHANNEL_ID, builder.build());
     }//sendNotificationWithChannel
 
 }//GeofenceTransitionsIntentService

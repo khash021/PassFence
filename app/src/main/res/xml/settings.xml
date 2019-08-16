@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Notification">
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/vibrate_pref_key"
+            android:title="@string/vibrate" />
+
+        <Preference
+            android:key="@string/ringtone_pref_key"
+            android:title="@string/ringtone" />
+
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="Choose Priority"
+            android:entries="@array/priority_array_label"
+            android:entryValues="@array/priority_array_values"
+            android:key="@string/priority_pref_key"
+            android:title="@string/priority" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/led_pref_key"
+            android:title="@string/blink_light" />
+    </PreferenceCategory>
+</PreferenceScreen>

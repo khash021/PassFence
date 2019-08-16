@@ -17,6 +17,8 @@ buildscript {
 
 allprojects {
     repositories {
+        //color picker
+        maven { url "https://jitpack.io" }
         google()
         jcenter()
     }

@@ -49,6 +49,8 @@ public class ListViewGeofenceActivity extends AppCompatActivity implements
 
     //TODO: remove the active check box, or make it correspond to clicks
 
+    //TODO: use a boolean for recreating in onResume (set the boolean when you are send to the add bin, edit, delete, etc)
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

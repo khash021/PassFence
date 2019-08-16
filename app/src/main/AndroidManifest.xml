@@ -46,6 +46,12 @@
             android:label="@string/view_geofences_map"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
+
+        <activity android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"/>
+
         <activity
             android:name=".ListViewGeofenceActivity"
             android:label="@string/list_of_geofences"
