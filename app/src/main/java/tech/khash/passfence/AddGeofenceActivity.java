@@ -60,13 +60,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-//TODO: FUTURE
-//TODO: add suggestion to the search
-
-
 //TODO: finish the activity on the results callback
-
-//TODO: add vibrate option here and use shared pref
 
 //TODO: add the name of the fence to the toast for added
 
@@ -219,15 +213,15 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
         seekBar = findViewById(R.id.seek_bar);
         //default at 50 meters
-        seekBar.setProgress(5);
+        seekBar.setProgress(10);
         mRadius = 50;
         mRadiusText = findViewById(R.id.text_radius);
-        mRadiusText.setText("50");
+        mRadiusText.setText(String.valueOf((int)mRadius));
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                //set the radius to 5 if it is at the very beginning (0 progress), otherwise, multiply by 10
-                mRadius = (progress < 1) ? 5.0f : ((float) progress * 10);
+                //set the radius to 5 if it is at the very beginning (0 progress), otherwise, multiply by 5
+                mRadius = (progress < 1) ? 5.0f : ((float) progress * 5);
                 //draw circle
                 drawCircle(geoFenceLatLng, mRadius);
                 //add the radius
@@ -250,7 +244,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                 if (radius < 1) {
                     mRadius = 5.0f;
                 } else {
-                    mRadius = (float) seekBar.getProgress() * 10;
+                    mRadius = (float) seekBar.getProgress() * 5;
                 }
                 //add the radius
                 String radiusString = String.valueOf(mRadius);
@@ -272,7 +266,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                     visibleBound.including(neCorner);
                     mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(visibleBound, 200));
                 }
-
             }//onStopTrackingTouch
         });//SeekBarChangeListener
     }//onCreate
@@ -951,5 +944,4 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         }//if
         return true;
     }//checkMapReady
-
 }//Activity

@@ -38,7 +38,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     //TODO: add modify geofence both from list and map view
-    //TODO: fix the
+
     //TODO: move these constants
 
     //TODO: Edit and finalize Settings and its xml files
