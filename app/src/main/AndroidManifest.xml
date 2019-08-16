@@ -47,11 +47,6 @@
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".SearchAddressActivity"
-            android:label="Search for address"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".ListViewGeofenceActivity"
             android:label="@string/list_of_geofences"
             android:parentActivityName=".MainActivity"

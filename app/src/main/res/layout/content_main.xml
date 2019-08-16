@@ -41,13 +41,6 @@
             android:layout_margin="8dp"
             android:text="View List Geofence" />
 
-        <Button
-            android:id="@+id/button_address_map"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:text="Search address" />
-
 
         <Button
             android:id="@+id/button_clear_fence"
