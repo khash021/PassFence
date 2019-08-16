@@ -1,6 +1,7 @@
 package tech.khash.passfence;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -135,26 +137,55 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        //TODO: make the functionality of these
         switch (item.getItemId()) {
             case R.id.action_settings:
 
 
                 break;
             case R.id.action_rate:
-
+                Uri uri = Uri.parse("market://details?id=" + this.getPackageName());
+                Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                // To count with Play market backstack, After pressing back button,
+                // to taken back to our application, we need to add following flags to intent.
+                goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
+                        Intent.FLAG_ACTIVITY_NEW_DOCUMENT |
+                        Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                try {
+                    startActivity(goToMarket);
+                } catch (ActivityNotFoundException e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://play.google.com/store/apps/details?id=" + this.getPackageName())));
+                }
+                return true;
+            case R.id.action_share:
+                ShareCompat.IntentBuilder.from(this)
+                        .setType("text/plain")
+                        .setChooserTitle(R.string.share_intent_title)
+                        .setSubject(getResources().getString(R.string.share_dialog_title))
+                        .setText(getResources().getString(R.string.google_play_address))
+                        .startChooser();
                 return true;
             case R.id.action_help:
+                //TODO
 
                 return true;
             case R.id.action_contact:
-
-                return true;
+                //send email. Use Implicit intent so the user can choose their preferred app
+                //create uri for email
+                String email = getString(R.string.contact_email);
+                Uri emailUri = Uri.parse("mailto:" + email);
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, emailUri);
+                //make sure the device can handle the intent before sending
+                if (emailIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(emailIntent);
+                    return true;
+                }
+                return super.onOptionsItemSelected(item);
             case R.id.action_privacy_policy:
-
+                //TODO
                 return true;
             case R.id.action_about:
-
+                //TODO
                 return true;
         }//switch
         return super.onOptionsItemSelected(item);
