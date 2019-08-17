@@ -53,11 +53,6 @@
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".ListViewGeofenceActivity"
-            android:label="@string/list_of_geofences"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait" /> <!-- activity required to show ad overlay -->
-        <activity
             android:name="com.google.android.gms.ads.AdActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />
     </application>

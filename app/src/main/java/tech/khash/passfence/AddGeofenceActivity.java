@@ -265,6 +265,13 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
                     visibleBound.including(swCorner);
                     visibleBound.including(neCorner);
                     mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(visibleBound, 200));
+                } else {
+                    //TODO: added this
+                    //this means the circle is visible, but we want to set the the bounds to contain
+                    //circle with a zoom level matching above case
+                    //creat a new bound and set it
+                    LatLngBounds bounds = new LatLngBounds(swCorner, neCorner);
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 200));
                 }
             }//onStopTrackingTouch
         });//SeekBarChangeListener

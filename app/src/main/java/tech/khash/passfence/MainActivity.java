@@ -15,40 +15,54 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements FenceListAdapter.ListItemLongClickListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener{
 
     //TODO: add modify geofence both from list and map view
 
-    //TODO: move these constants
+    //TODO: comment methods
 
-    //TODO: Edit and finalize Settings and its xml files
+    //TODO: remove unused methods all across (Analyze > inspect code)
+
+    //TODO: add recreate boolean for all the stuff that comes back to activity
 
     private final static String TAG = MainActivity.class.getSimpleName();
 
@@ -68,12 +82,32 @@ public class MainActivity extends AppCompatActivity {
     //Notification channels for Android 8 and higher
     public final static String CHANNEL_ID = "Notification Settings";
 
+    //For geofences
+    protected GoogleApiClient mGoogleApiClient;
+    private GeofencingClient mGeofencingClient;
+
+    //adapter
+    private ArrayList<Fence> mFenceArrayList;
+    private FenceListAdapter adapter;
+    private RecyclerView recyclerView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //Set the tool bar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        //change the title
+        getSupportActionBar().setTitle(getString(R.string.app_name));
+//        //Set the menu icon
+//        ActionBar actionbar = getSupportActionBar();
+//        //Enable app bar home button
+//        actionbar.setDisplayHomeAsUpEnabled(true);
+//        //Make it use the icon
+//        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
+//        //In order for the button to open the menu we need to override onOption Item selected (below onCreate)
+
 
         //check for location permission and ask for it
         if (!checkLocationPermission(this)) {
@@ -81,53 +115,114 @@ public class MainActivity extends AppCompatActivity {
             askLocationPermission(this, this);
         } //permission
 
+        //create notification channel
         createNotificationChannel();
 
-
-        ((Button) findViewById(R.id.button_geofence_activity)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, AddGeofenceActivity.class);
-                startActivity(i);
-            }
-        });
-
-        ((Button) findViewById(R.id.button_map_view_geofence)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, MapViewGeofenceActivity.class);
-                startActivity(i);
-            }
-        });
-
-        ((Button) findViewById(R.id.button_recreate)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                recreate();
-            }
-        });
-
-        ((Button) findViewById(R.id.button_clear_fence)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                removeAllFences(getApplicationContext());
-            }
-        });
-
-
-        ((Button) findViewById(R.id.button_list_view_geofence)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, ListViewGeofenceActivity.class);
-                startActivity(i);
-            }
-        });
-
-        TextView textView = findViewById(R.id.text_pref);
-
-
         addBannerAd();
+
+
+        //view containing the empty view
+        LinearLayout emptyView = findViewById(R.id.empty_view);
+
+        //get the arrayList, and set the empty view if the array is empty
+        mFenceArrayList = loadArrayList(this);
+        if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
+            emptyView.setVisibility(View.VISIBLE);
+        } else {
+            emptyView.setVisibility(View.GONE);
+        }
+
+        // Get a handle to the RecyclerView.
+        recyclerView = findViewById(R.id.recycler_view);
+        // Create an adapter and supply the data to be displayed.
+        adapter = new FenceListAdapter(this, mFenceArrayList, this);
+        // Connect the adapter with the RecyclerView.
+        recyclerView.setAdapter(adapter);
+        // Give the RecyclerView a default layout manager.
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Kick off the request to build GoogleApiClient.
+        buildGoogleApiClient();
+
+        //find the fab and set it up
+        FloatingActionButton fabAddContent = findViewById(R.id.fab_add_content);
+        fabAddContent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent addIntent = new Intent(MainActivity.this, AddGeofenceActivity.class);
+                //TODO: change this to activity for results
+                startActivity(addIntent);
+            }
+        });
+
+        //create an instance of the Geofencing client to access the location APIs
+        mGeofencingClient = LocationServices.getGeofencingClient(this);
+
+
+//        ((Button) findViewById(R.id.button_geofence_activity)).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent i = new Intent(MainActivity.this, AddGeofenceActivity.class);
+//                startActivity(i);
+//            }
+//        });
+//
+//        ((Button) findViewById(R.id.button_map_view_geofence)).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent i = new Intent(MainActivity.this, MapViewGeofenceActivity.class);
+//                startActivity(i);
+//            }
+//        });
     }//onCreate
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //resume adview
+        mAdView.resume();
+    }//onResume
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //pause adview (Pauses any extra processing associated with this ad view.)
+        mAdView.pause();
+    }//onPause
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!mGoogleApiClient.isConnecting() || !mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect();
+        }
+    }//onStart
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mGoogleApiClient.isConnecting() || mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }//onStop
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Destroy the AdView.
+        mAdView.destroy();
+    }//onDestroy
+
+    protected synchronized void buildGoogleApiClient() {
+        Log.v(TAG, "buildGoogleApiClient called");
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }//buildGoogleApiClient
 
     /**
      * Inflates the menu, and adds items to the action bar if it is present.
@@ -194,9 +289,74 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_about:
                 //TODO
                 return true;
+            case R.id.action_refresh:
+                recreate();
+                return true;
+            case R.id.action_sort_name_ascending:
+                if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
+                    Toast.makeText(getApplicationContext(), "List is empty", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                sortNameAscending();
+                return true;
+            case R.id.action_sort_name_descending:
+                if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
+                    Toast.makeText(getApplicationContext(), "List is empty", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                sortNameDescending();
+                return true;
+            case R.id.action_sort_expiry_ascending:
+                if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
+                    Toast.makeText(getApplicationContext(), "List is empty", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                sortExpiryAscending();
+                return true;
+            case R.id.action_sort_expiry_descending:
+                if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
+                    Toast.makeText(getApplicationContext(), "List is empty", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                sortExpiryDescending();
+                return true;
+            case R.id.action_delete_all:
+                //TODO: check to make sure the list is not empty
+                if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
+                    Toast.makeText(getApplicationContext(), "No registered locations", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                deleteAllList();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }//switch
         return super.onOptionsItemSelected(item);
     }//onOptionsItemSelected
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+    }//onConnected
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        mGoogleApiClient.connect();
+    }//onConnectionSuspended
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    }//onConnectionFailed
+
+    @Override
+    public void onListItemLongClick(int clickedItemIndex) {
+        //get the corresponding fence object
+        Fence fence = mFenceArrayList.get(clickedItemIndex);
+        //show a dialog
+        showLongClickDialog(fence);
+    }//onListItemLongClick
+
+    /*-------------------------HELPER METHODS ----------------------------------*/
+
 
     public static ArrayList<Fence> loadArrayList(Context context) {
 
@@ -309,19 +469,20 @@ public class MainActivity extends AppCompatActivity {
     }//removeAllFences
 
     //helper methods to get the bounds of the circle (radius in meters)
+    //TODO: use these to update when circle is visible as well
     public static LatLng swCorner(LatLng center, float radius) {
         double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
         LatLng southwestCorner =
                 SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 225.0);
         return southwestCorner;
-    }
+    }//swCorner
 
     public static LatLng neCorner(LatLng center, float radius) {
         double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
         LatLng northeastCorner =
                 SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 45.0);
         return northeastCorner;
-    }
+    }//neCorner
 
 
     public static boolean checkLocationPermission(Context context) {
@@ -433,9 +594,6 @@ public class MainActivity extends AppCompatActivity {
     private void addBannerAd() {
         //find the ad view
         mAdView = findViewById(R.id.ad_view);
-        //attach the listener first before loading it
-        //this is for testing of knowing what is going on at each step, so disable now
-//        adView.setAdListener(new ToastAdListener(this));
         //create an ad request object using the builder
         AdRequest adRequest = new AdRequest.Builder()
                 .build();
@@ -443,26 +601,220 @@ public class MainActivity extends AppCompatActivity {
         mAdView.loadAd(adRequest);
     }//addBannerAd
 
+    //helper method for removing all data
+    private void deleteAllList() {
+        //show a dialog for confirmation
+        showDeleteAllDialog();
+    }//deleteAllList
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //resume adview
-        mAdView.resume();
-    }//onResume
+    //Helper method for sorting list based on their name (ascending)
+    private void sortNameAscending() {
+        Collections.sort(mFenceArrayList, new Comparator<Fence>() {
+            @Override
+            public int compare(Fence o1, Fence o2) {
+                return o1.getId().compareTo(o2.getId());
+            }
+        });
+        //notify the adapter that the data has changed, and it should update
+        adapter.notifyDataSetChanged();
+    }//sortNameAscending
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        //pause adview (Pauses any extra processing associated with this ad view.)
-        mAdView.pause();
-    }//onPause
+    //Helper method for sorting list based on their name (ascending)
+    private void sortNameDescending() {
+        Collections.sort(mFenceArrayList, new Comparator<Fence>() {
+            @Override
+            public int compare(Fence o1, Fence o2) {
+                return o2.getId().compareTo(o1.getId());
+            }
+        });
+        //notify the adapter that the data has changed, and it should update
+        adapter.notifyDataSetChanged();
+    }//sortNameAscending
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Destroy the AdView.
-        mAdView.destroy();
-    }//onDestroy
+    ////Helper method for sorting list based on their expiray (ascending)
+    private void sortExpiryAscending() {
+        Collections.sort(mFenceArrayList, new Comparator<Fence>() {
+            @Override
+            public int compare(Fence f1, Fence f2) {
+                Long t1 = f1.getExpiaryTimeMilliSec();
+                Long t2 = f2.getExpiaryTimeMilliSec();
 
+                return t1.compareTo(t2);
+            }
+        });
+        //notify the adapter that the data has changed, and it should update
+        adapter.notifyDataSetChanged();
+    }//sortExpiryAscending
+
+    ////Helper method for sorting list based on their expiray (descending)
+    private void sortExpiryDescending() {
+        Collections.sort(mFenceArrayList, new Comparator<Fence>() {
+            @Override
+            public int compare(Fence f1, Fence f2) {
+                Long t1 = f1.getExpiaryTimeMilliSec();
+                Long t2 = f2.getExpiaryTimeMilliSec();
+
+                return t2.compareTo(t1);
+            }
+        });
+        //notify the adapter that the data has changed, and it should update
+        adapter.notifyDataSetChanged();
+    }//sortExpiryAscending
+
+    //Helper method for showing the dialog for erasing all data
+    private void showDeleteAllDialog() {
+
+        //create the builder
+        AlertDialog.Builder builder =new AlertDialog.Builder(this);
+
+        //add message and button functionality
+        builder.setMessage(R.string.delete_all_dialog_msg)
+                .setPositiveButton(R.string.delete_all, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Delete all
+                        removeAllFences(getApplicationContext());
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //close the dialog
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }//showUnsavedChangesDialog
+
+    //helper method for showing the dialog
+    private void showLongClickDialog(final Fence fence) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setTitle(fence.getId());
+        String[] list = {getString(R.string.edit), getString(R.string.delete), getString(R.string.cancel)};
+        dialogBuilder.setItems(list, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int index) {
+                switch (index) {
+                    case 0:
+                        //edit mode
+                        //TODO: change to activity for results
+                        Intent editIntent = new Intent(getApplicationContext(), AddGeofenceActivity.class);
+                        editIntent.putExtra(FENCE_EDIT_EXTRA_INTENT, fence.getId());
+                        startActivity(editIntent);
+                        break;
+                    case 1:
+                        //delete
+                        showDeleteConfirmationDialog(fence);
+                        break;
+                    case 2:
+                        //cancel
+                        dialog.dismiss();
+                        break;
+                }//switch
+            }
+        });
+        dialogBuilder.create().show();
+    }//showBadLocationDialog
+
+    //helper method for delete confirmation
+    private void showDeleteConfirmationDialog(final Fence fence) {
+        //get the id
+        String fenceId = fence.getId();
+        //create the builder
+        AlertDialog.Builder builder =new AlertDialog.Builder(this);
+
+        String message = getString(R.string.dialog_delete_fence) + " \"" + fenceId + "\"" +
+                getString(R.string.question_mark);
+
+        //add message and button functionality
+        builder.setMessage(message)
+                .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //delete fence
+                        deleteGeofence(fence);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //close the dialog
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }//showDeleteConfirmationDialog
+
+    //helper method for deleting the geofence
+    private void deleteGeofence(Fence targetFence) {
+        //get the id of the fence
+        String fenceId = targetFence.getId();
+        //retrieve the array list of Fences
+        mFenceArrayList = loadArrayList(this);
+
+        //find the Fence object we want to edit
+        Fence fence = null;
+        int fenceIndexInArray = -1;
+        for (Fence f : mFenceArrayList) {
+            if (f.getId().equalsIgnoreCase(fenceId)) {
+                fence = f;
+                //get the index of our Fence object
+                fenceIndexInArray = mFenceArrayList.indexOf(f);
+                break;
+            }//if
+        }//for
+
+        //check for null or -1 index
+        if (fence == null | fenceIndexInArray == -1) {
+            Log.wtf(TAG, "Error in locating the fence object");
+            return;
+        }
+
+        //remove geofence
+        //remove method takes a list, so create a list with the fenceId to be removed
+        List<String> oldFenceIdList = new ArrayList<String>();
+        oldFenceIdList.add(fenceId);
+
+        mGeofencingClient.removeGeofences(oldFenceIdList).addOnSuccessListener(this, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.v(TAG, "Geofence removed successfully");
+                Toast.makeText(getApplicationContext(), getString(R.string.geofence_removed), Toast.LENGTH_SHORT).show();
+            }
+        })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.v(TAG, "Geofence removal error");
+                        Toast.makeText(getApplicationContext(), getString(R.string.error_remove_geofence), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        //remove the geofence from the main arraylist (return true if it was removed)
+        boolean removeSuccess = mFenceArrayList.remove(fence);
+
+        //update the main arraylist
+        if (removeSuccess) {
+            //update app's arrayList
+            updateArrayList(this, mFenceArrayList);
+        }
+
+        //recreate activity
+        recreate();
+    }//deleteGeofence
 }//MainActivity
+
+
+
+
+
+
+
+
+
+
+

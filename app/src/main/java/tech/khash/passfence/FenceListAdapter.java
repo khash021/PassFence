@@ -92,6 +92,9 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
 
     @Override
     public int getItemCount() {
+        if (fenceArrayList == null) {
+            return 0;
+        }
         return fenceArrayList.size();
     }//getItemCount
 

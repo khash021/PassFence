@@ -30,7 +30,8 @@
     <!--Ads stuff-->
     <string name="banner_ad_unit_id_test">ca-app-pub-3940256099942544/6300978111</string>
     <string name="interstitial_ad_unit_id_test">ca-app-pub-3940256099942544/1033173712</string>
-    <string name="no_saved_geofences">No saved Geofences!</string>
+    <string name="no_saved_location">No saved locations!</string>
+    <string name="add_location_empty_view_text">Add locations using the \"+\" button or from menu</string>
 
     <!--Add Geofence class-->
     <string name="name_add_fence">Name:</string>
@@ -158,6 +159,7 @@
     <string name="settings_explanation_dialog_body">In these newer phones, notification settings (vibrate, sound, and light) need to be modified in app\'s notification channel.
     \nYou may view the set values here; however, you need to go to the settings to modify them.</string>
     <string name="got_to_settings">Go to Settings</string>
+
 
 
 </resources>
