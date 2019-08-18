@@ -61,7 +61,7 @@
         android:layout_height="56dp"
         android:layout_margin="16dp"
         android:scaleType="center"
-        android:src="@drawable/ic_plus"
+        android:src="@drawable/ic_plus_white"
         app:layout_constraintBottom_toTopOf="@id/ad_view"
         app:layout_constraintEnd_toEndOf="parent"/>
 

@@ -2,50 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/action_settings"
-        android:title="@string/settings"
-        android:orderInCategory="10"
-        app:showAsAction="never"/>
-
-    <item
-        android:id="@+id/action_rate"
-        android:title="@string/rate_app"
-        android:orderInCategory="20"
-        app:showAsAction="never"/>
-
-    <item
-        android:id="@+id/action_share"
-        android:title="@string/share"
-        android:orderInCategory="25"
-        app:showAsAction="never"/>
-
-
-    <item
-        android:id="@+id/action_help"
-        android:title="@string/help"
-        android:orderInCategory="30"
-        app:showAsAction="never"/>
-
-    <item
-        android:id="@+id/action_contact"
-        android:title="@string/contact"
-        android:orderInCategory="40"
-        app:showAsAction="never"/>
-
-
-    <item
-        android:id="@+id/action_privacy_policy"
-        android:title="@string/privacy_policy"
-        android:orderInCategory="50"
-        app:showAsAction="never"/>
-
-    <item
-        android:id="@+id/action_about"
-        android:title="@string/about"
-        android:orderInCategory="60"
-        app:showAsAction="never"/>
-
     <item android:id="@+id/action_refresh"
         android:title="@string/refresh"
         app:showAsAction="ifRoom"
@@ -76,10 +32,5 @@
         android:title="@string/delete_all"
         app:showAsAction="never"
         android:orderInCategory="100"/>
-
-
-
-
-
 
 </menu>

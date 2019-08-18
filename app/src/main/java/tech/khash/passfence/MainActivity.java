@@ -18,9 +18,13 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
@@ -54,7 +58,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements FenceListAdapter.ListItemLongClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener{
+        GoogleApiClient.OnConnectionFailedListener,
+        NavigationView.OnNavigationItemSelectedListener{
 
     //TODO: add modify geofence both from list and map view
 
@@ -63,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     //TODO: remove unused methods all across (Analyze > inspect code)
 
     //TODO: add recreate boolean for all the stuff that comes back to activity
+
+    //TODO: check nav header icon size
 
     private final static String TAG = MainActivity.class.getSimpleName();
 
@@ -91,6 +98,8 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     private FenceListAdapter adapter;
     private RecyclerView recyclerView;
 
+    DrawerLayout drawerLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,13 +109,20 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         setSupportActionBar(toolbar);
         //change the title
         getSupportActionBar().setTitle(getString(R.string.app_name));
-//        //Set the menu icon
-//        ActionBar actionbar = getSupportActionBar();
-//        //Enable app bar home button
-//        actionbar.setDisplayHomeAsUpEnabled(true);
-//        //Make it use the icon
-//        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
-//        //In order for the button to open the menu we need to override onOption Item selected (below onCreate)
+        //Set the menu icon
+        ActionBar actionbar = getSupportActionBar();
+        //Enable app bar home button
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        //Make it use the icon
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
+        //In order for the button to open the menu we need to override onOption Item selected (below onCreate)
+
+        //get the drawer layout and navigation drawer
+        drawerLayout =findViewById(R.id.drawer_layout);
+        NavigationView navigationView =findViewById(R.id.nav_view);
+        if (navigationView != null) {
+            navigationView.setNavigationItemSelectedListener(this);
+        }
 
 
         //check for location permission and ask for it
@@ -158,22 +174,6 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         //create an instance of the Geofencing client to access the location APIs
         mGeofencingClient = LocationServices.getGeofencingClient(this);
 
-
-//        ((Button) findViewById(R.id.button_geofence_activity)).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent i = new Intent(MainActivity.this, AddGeofenceActivity.class);
-//                startActivity(i);
-//            }
-//        });
-//
-//        ((Button) findViewById(R.id.button_map_view_geofence)).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent i = new Intent(MainActivity.this, MapViewGeofenceActivity.class);
-//                startActivity(i);
-//            }
-//        });
     }//onCreate
 
 
@@ -240,54 +240,9 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
-                startActivity(settingsIntent);
-                break;
-            case R.id.action_rate:
-                Uri uri = Uri.parse("market://details?id=" + this.getPackageName());
-                Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
-                // To count with Play market backstack, After pressing back button,
-                // to taken back to our application, we need to add following flags to intent.
-                goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
-                        Intent.FLAG_ACTIVITY_NEW_DOCUMENT |
-                        Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                try {
-                    startActivity(goToMarket);
-                } catch (ActivityNotFoundException e) {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            Uri.parse("http://play.google.com/store/apps/details?id=" + this.getPackageName())));
-                }
-                return true;
-            case R.id.action_share:
-                ShareCompat.IntentBuilder.from(this)
-                        .setType("text/plain")
-                        .setChooserTitle(R.string.share_intent_title)
-                        .setSubject(getResources().getString(R.string.share_dialog_title))
-                        .setText(getResources().getString(R.string.google_play_address))
-                        .startChooser();
-                return true;
-            case R.id.action_help:
-                //TODO
-
-                return true;
-            case R.id.action_contact:
-                //send email. Use Implicit intent so the user can choose their preferred app
-                //create uri for email
-                String email = getString(R.string.contact_email);
-                Uri emailUri = Uri.parse("mailto:" + email);
-                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, emailUri);
-                //make sure the device can handle the intent before sending
-                if (emailIntent.resolveActivity(getPackageManager()) != null) {
-                    startActivity(emailIntent);
-                    return true;
-                }
-                return super.onOptionsItemSelected(item);
-            case R.id.action_privacy_policy:
-                //TODO
-                return true;
-            case R.id.action_about:
-                //TODO
+            case android.R.id.home:
+                //open navigation drawer
+                drawerLayout.openDrawer(GravityCompat.START);
                 return true;
             case R.id.action_refresh:
                 recreate();
@@ -331,8 +286,90 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
             default:
                 return super.onOptionsItemSelected(item);
         }//switch
-        return super.onOptionsItemSelected(item);
     }//onOptionsItemSelected
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.nav_add_location:
+                Intent addIntent = new Intent(MainActivity.this, AddGeofenceActivity.class);
+                //TODO: change this to activity for results
+                startActivity(addIntent);
+                return true;
+            case R.id.nav_edit_location:
+                //TODO:
+                return true;
+            case R.id.nav_map_view:
+                Intent mapViewIntent = new Intent(MainActivity.this, MapViewGeofenceActivity.class);
+                startActivity(mapViewIntent);
+                return true;
+            case R.id.nav_settings:
+                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(settingsIntent);
+                return true;
+            case R.id.nav_contact:
+                //send email. Use Implicit intent so the user can choose their preferred app
+                //create uri for email
+                String email = getString(R.string.contact_email);
+                Uri emailUri = Uri.parse("mailto:" + email);
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, emailUri);
+                //make sure the device can handle the intent before sending
+                if (emailIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(emailIntent);
+                    return true;
+                }
+                return false;
+            case R.id.nav_rate:
+                Uri uri = Uri.parse("market://details?id=" + this.getPackageName());
+                Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                // To count with Play market backstack, After pressing back button,
+                // to taken back to our application, we need to add following flags to intent.
+                goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
+                        Intent.FLAG_ACTIVITY_NEW_DOCUMENT |
+                        Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                try {
+                    startActivity(goToMarket);
+                } catch (ActivityNotFoundException e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://play.google.com/store/apps/details?id=" + this.getPackageName())));
+                }
+                return true;
+            case R.id.nav_share:
+                ShareCompat.IntentBuilder.from(this)
+                        .setType("text/plain")
+                        .setChooserTitle(R.string.share_intent_title)
+                        .setSubject(getResources().getString(R.string.share_dialog_title))
+                        .setText(getResources().getString(R.string.google_play_address))
+                        .startChooser();
+                return true;
+            case R.id.nav_help:
+                //TODO:
+                return true;
+            case R.id.nav_about:
+                //TODO:
+                return true;
+            case R.id.nav_privacy_policy:
+                //TODO:
+                return true;
+            default:
+                return false;
+        }//switch
+    }//onNavigationItemSelected
+
+    /**
+     * Handles the Back button: closes the nav drawer.
+     */
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer != null) {
+            if (drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.closeDrawer(GravityCompat.START);
+            } else {
+                super.onBackPressed();
+            }
+        }
+    }//onBackPressed
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -806,6 +843,8 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         //recreate activity
         recreate();
     }//deleteGeofence
+
+
 }//MainActivity
 
 

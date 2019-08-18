@@ -161,5 +161,11 @@
     <string name="got_to_settings">Go to Settings</string>
 
 
+    <!--Navigation Drawer-->
+    <string name="communication">Communication</string>
+    <string name="add_new_location">Add New Location</string>
+    <string name="edit_location">Edit Location</string>
+    <string name="view_locations_on_map">View Locations on Map</string>
+
 
 </resources>
