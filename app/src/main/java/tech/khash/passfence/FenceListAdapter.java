@@ -19,9 +19,6 @@ import java.util.ArrayList;
 
 public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.FenceViewHolder> {
 
-
-    //TODO: add functionality for the active/inactive checkbox
-
     //list of data
     private final ArrayList<Fence> fenceArrayList;
     //inflater used for creating the view

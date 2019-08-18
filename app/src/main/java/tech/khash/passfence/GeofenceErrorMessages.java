@@ -5,6 +5,12 @@ import android.content.res.Resources;
 
 import com.google.android.gms.location.GeofenceStatusCodes;
 
+/**
+ * Created by Khashayar "Khash" Mortazavi
+ *
+ * This get the error int code and returns the String description of the error
+ */
+
 public class GeofenceErrorMessages {
 
     /**
@@ -27,6 +33,6 @@ public class GeofenceErrorMessages {
             default:
                 return mResources.getString(R.string.unknown_geofence_error);
         }
-    }
+    }//getErrorString
 
 }//GeofenceErrorMessages

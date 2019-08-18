@@ -23,10 +23,22 @@ import com.google.android.gms.location.GeofencingEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Created by Khashayar "Khash" Mortazavi
+ *
+ * This is the class (which extends IntentService) gets called when the registered geofences
+ * are triggered.
+ *
+ * Here we get the geofence that triggered this, and then extract the required data from it ( such
+ * as the event that triggered it, the name of the fence.
+ *
+ * This is also where we send the notification. All the notification properties are set from the
+ * corresponding Fence object, and the app's share preferences
+ */
+
 public class GeofenceTransitionsIntentService extends IntentService {
 
     protected static final String TAG = GeofenceTransitionsIntentService.class.getSimpleName();
-
 
     public final static int NOTIFICATION_CHANNEL_ID = 1;
 
@@ -40,8 +52,10 @@ public class GeofenceTransitionsIntentService extends IntentService {
         super.onCreate();
     }//onCreate
 
-    //This is the meat of this class that handles the functionality. We pass in an Intent, intent,
-    //and there are no outputs
+    /**
+     * This is the meat of this class that handles the functionality.
+     * @param intent : the intent that triggered this
+     */
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         //Create a GeofencingEvent object by calling the fromIntent method with our intent as an input
@@ -82,9 +96,9 @@ public class GeofenceTransitionsIntentService extends IntentService {
             // Log the error.
             Log.e(TAG, getString(R.string.geofence_transition_invalid_type));
         }
-
     }//onHandleIntent
 
+    //This gets the details of the Geofence that triggered this
     private String getGeofenceTransitionDetails(
             Context context,
             int geofenceTransition,
@@ -116,8 +130,9 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
     //helper method for creating the notification builder
     private void sendNotificationWithChannel(String notificationDetails) {
-        //NOTE: By default, the notification's text content is truncated to fit one line. If you want your
-        // notification to be longer, you can enable an expandable notification by adding a style template with setStyle()
+        /*  By default, the notification's text content is truncated to fit one line.
+            If you want your notification to be longer, you can enable an expandable notification
+            by adding a style template with setStyle() */
 
         /**       This creates a normal notification, the back button acts normal in the app   */
         // Create an Intent to start password settings
@@ -128,11 +143,11 @@ public class GeofenceTransitionsIntentService extends IntentService {
         // Get the PendingIntent containing the entire back stack
         PendingIntent normalPendingIntent =
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        //TODO: updating not working properly for now
 
-        //create NotificationCompat.Builder object
-        //NotificationCompat.Builder constructor requires that you provide a channel ID. This is
-        // required for compatibility with Android 8.0 (API level 26) and higher, but is ignored by older versions
+        /* Create NotificationCompat.Builder object
+           NotificationCompat.Builder constructor requires that you provide a channel ID. This is
+           required for compatibility with Android 8.0 (API level 26) and higher,
+           but is ignored by older versions */
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MainActivity.CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(notificationDetails)
@@ -203,7 +218,6 @@ public class GeofenceTransitionsIntentService extends IntentService {
         // notificationId is a unique int for each notification that you must define
         notificationManager.notify(NOTIFICATION_CHANNEL_ID, builder.build());
     }//sendNotificationWithChannel
-
 }//GeofenceTransitionsIntentService
 
 
