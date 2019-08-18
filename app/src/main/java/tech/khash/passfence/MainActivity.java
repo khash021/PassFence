@@ -28,6 +28,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -156,6 +157,11 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         recyclerView.setAdapter(adapter);
         // Give the RecyclerView a default layout manager.
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        //Add divider between items using the DividerItemDecoration
+        DividerItemDecoration decoration = new DividerItemDecoration(recyclerView.getContext(),
+                DividerItemDecoration.VERTICAL);
+        recyclerView.addItemDecoration(decoration);
+
 
         // Kick off the request to build GoogleApiClient.
         buildGoogleApiClient();
