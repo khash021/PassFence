@@ -136,6 +136,7 @@
                 android:layout_marginLeft="30dp"
                 android:layout_marginRight="12dp"
                 android:layout_toEndOf="@+id/text_criteria"
+                android:checked="true"
                 android:text="@string/enter" />
 
             <CheckBox
@@ -144,6 +145,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignBaseline="@+id/check_enter"
                 android:layout_toEndOf="@+id/check_enter"
+                android:checked="true"
                 android:text="@string/exit" />
 
         </RelativeLayout>

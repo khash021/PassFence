@@ -21,11 +21,4 @@ limitations under the License. -->
         android:endColor="#ffb300"
         android:startColor="#fff350"
         android:type="linear" />
-
-    <!--<gradient-->
-        <!--android:angle="135"-->
-        <!--android:centerColor="#4CAF50"-->
-        <!--android:endColor="#2E7D32"-->
-        <!--android:startColor="#fff350"-->
-        <!--android:type="linear" />-->
 </shape>

@@ -46,8 +46,10 @@
     <string name="name_required_toast">Name required</string>
     <string name="criteria_required_toast">Criteria required</string>
     <string name="duplicate_name_toast">Name is already registered</string>
-    <string name="geofence_added_toast">Geofence added</string>
-    <string name="error_geofence_add">Error adding geofence</string>
+    <string name="geofence_added_toast">Added</string>
+    <string name="geofence_updated_toast">Updated</string>
+    <string name="error_geofence_add">Error adding location</string>
+    <string name="error_geofence_update">Error updating location</string>
     <string name="enter_address_hint">Enter address</string>
     <string name="geocoder_not_available_toast">Geocoder not available</string>
     <string name="no_results_found_toast">No results found</string>
