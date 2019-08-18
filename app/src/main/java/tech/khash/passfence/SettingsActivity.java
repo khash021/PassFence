@@ -34,6 +34,7 @@ import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
 /**
  * Created by Khashayar "Khash" Mortazavi
+ *
  * Main class responsible for the settings. As of now, it only controls the notification settings.
  * It uses a PreferenceFragmentCompact for devices API 25 and lower. For API 26 and above, all these
  * notification settings are controlled by the channel and can be changed in the system settings,
@@ -44,6 +45,9 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
     private static final String TAG = SettingsActivity.class.getSimpleName();
     static final String PACKAGE_NAME = "tech.khash.passfence";
+
+    //for showing the dialog for newer devices
+    private static final String FIRST_TIME_DIALOG_PREF_KEY = "first_time_dialog_pref_key";
 
     //for activity results
     private static final int REQUEST_CODE_ALERT_RINGTONE = 1;
@@ -95,7 +99,6 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         Log.v(TAG, "onActivityResult called" +"\nRequest Code: " + requestCode + "\nResult Code: " + resultCode);
-        //TODO: gotta be a better way than recreating
         if (requestCode == REQUEST_CODE_ALERT_RINGTONE && data != null) {
             Uri ringtone = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
             if (ringtone != null) {
@@ -114,34 +117,30 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onClick(View v) {
-        //if any of the oreo views are clicked, we show them the explanation dialog
+        //if any of the oreo views are clicked, go to notification settings
         int id = v.getId();
         switch (id) {
-            //if any of the oreo views are clicked, we show them the explanation dialog
+            //if any of the oreo views are clicked, go to notification settings (Oreo only)
             case R.id.text_ringtone_summary:
             case R.id.text_ringtone_header:
             case R.id.text_priority_header:
             case R.id.text_priority_summary:
             case R.id.switch_vibrate:
             case R.id.switch_led:
-                showExplanationDialog(v.getContext());
-                break;
-
-            //show the color picker
-            case R.id.button_color_picker:
-                //get the current color and start the picker
-                setupAndShowColorPicker();
-                break;
-
-            //go to notification channel settings
             case R.id.button_notification:
                 //open app notification setting
                 openNotificationChannelSettings();
                 break;
 
+            //show the color picker (API < 26 devices only)
+            case R.id.button_color_picker:
+                //get the current color and start the picker
+                setupAndShowColorPicker();
+                break;
         }//switch
     }//onClick
 
+    //----------------------- PreferenceFragment for lower API phones ---------------------------
 
     public static class PreferencesFragment extends PreferenceFragmentCompat implements
             Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
@@ -214,7 +213,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                         // No ringtone has been selected, set to the default
                         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Settings.System.DEFAULT_NOTIFICATION_URI);
                     }
-
+                    //get the activity of the host and start for results
                     getActivity().startActivityForResult(intent, REQUEST_CODE_ALERT_RINGTONE);
                     return true;
                 } else {
@@ -247,10 +246,21 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
     }//PreferencesFragment
 
+    /*------------------------------------------------------------------------------------------
+                    ---------------    HELPER METHODS    ---------------
+    ------------------------------------------------------------------------------------------*/
+
     //the call getNotificationChannel requires API 26, but we have already done that in onCreate, so we
     //added SuppressLint for that reason
     @SuppressLint("NewApi")
     private void setupOreoVersion() {
+        //Check to see if this is the first time the user is here, if so display the dialog
+        boolean firsTime = sharedPreferences.getBoolean(FIRST_TIME_DIALOG_PREF_KEY, true);
+        if (firsTime) {
+            showExplanationDialog(this);
+            //set the value to false so it is never shown again
+            sharedPreferences.edit().putBoolean(FIRST_TIME_DIALOG_PREF_KEY, false).apply();
+        }
         Button notificationButton = findViewById(R.id.button_notification);
         notificationButton.setOnClickListener(this);
 
@@ -302,7 +312,10 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         showColorPickerDialog(SettingsActivity.this, initialColor);
     }//setupAndShowColorPicker
 
-    //helper method for sending the user to the phone's notification channel settings
+    /* helper method for sending the user to the phone's notification channel settings
+       the call getNotificationChannel requires API 26, but we have already done that in onCreate, so we
+       added SuppressLint for that reason */
+    @SuppressLint("InlinedApi")
     private void openNotificationChannelSettings() {
         Intent intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
         intent.putExtra("android.provider.extra.APP_PACKAGE", PACKAGE_NAME);
@@ -344,7 +357,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 .show();
     }//showColorPickerDialog
 
-    //helper method for setting the current led color for API 25 and below
+    //Helper method for setting the current led color for API 25 and below
     private void setSelectedColor() {
         TextView colorText = findViewById(R.id.text_color);
         //get the color and pass it in as the initial/current color
@@ -362,6 +375,31 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }//isApi26Above
 
+    private String getImportanceString(int importance) {
+        switch (importance) {
+            case NotificationManager.IMPORTANCE_UNSPECIFIED:
+                return "Unspecified";
+            case NotificationManager.IMPORTANCE_NONE:
+                return "None";
+            case NotificationManager.IMPORTANCE_MIN:
+                return "Minimum";
+            case NotificationManager.IMPORTANCE_LOW:
+                return "Low";
+            case NotificationManager.IMPORTANCE_DEFAULT:
+                return "Default";
+            case NotificationManager.IMPORTANCE_HIGH:
+                return "High";
+            case NotificationManager.IMPORTANCE_MAX:
+                return "Maximum";
+            default:
+                return "";
+        }//getImportanceString
+    }//getImportanceString
+
+    /*  Helper method for showing explanation dialog reagrding their notification channel. Only shows
+        the first time they come to this page
+        The call getNotificationChannel requires API 26, but we have already done that in onCreate, so we
+        added SuppressLint for that reason */
     @SuppressLint("InlinedApi")
     private static void showExplanationDialog(final Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -385,26 +423,4 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 });
         builder.create().show();
     }//showExplanationDialog
-
-    private String getImportanceString(int importance) {
-        switch (importance) {
-            case NotificationManager.IMPORTANCE_UNSPECIFIED:
-                return "Unspecified";
-            case NotificationManager.IMPORTANCE_NONE:
-                return "None";
-            case NotificationManager.IMPORTANCE_MIN:
-                return "Minimum";
-            case NotificationManager.IMPORTANCE_LOW:
-                return "Low";
-            case NotificationManager.IMPORTANCE_DEFAULT:
-                return "Default";
-            case NotificationManager.IMPORTANCE_HIGH:
-                return "High";
-            case NotificationManager.IMPORTANCE_MAX:
-                return "Maximum";
-            default:
-                return "";
-        }//getImportanceString
-    }//getImportanceString
-
 }//SettingsActivity - class

@@ -12,8 +12,12 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 /**
+ * Created by Khashayar "Khash" Mortazavi
+ *
  * Main adapter class to be used with RecyclerView in the ListViewGeofenceActivity
  */
+
+
 public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.FenceViewHolder> {
 
     private static final String TAG = FenceListAdapter.class.getSimpleName();

@@ -442,8 +442,9 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     }//onBackPressed
 
 
-
-    /*-------------------------HELPER METHODS ----------------------------------*/
+    /*------------------------------------------------------------------------------------------
+                    ---------------    HELPER METHODS    ---------------
+    ------------------------------------------------------------------------------------------*/
 
     //build the google api client
     protected synchronized void buildGoogleApiClient() {

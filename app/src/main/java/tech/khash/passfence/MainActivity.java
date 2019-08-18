@@ -392,7 +392,9 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         showLongClickDialog(fence);
     }//onListItemLongClick
 
-    /*-------------------------HELPER METHODS ----------------------------------*/
+    /*------------------------------------------------------------------------------------------
+                    ---------------    HELPER METHODS    ---------------
+    ------------------------------------------------------------------------------------------*/
 
 
     public static ArrayList<Fence> loadArrayList(Context context) {
