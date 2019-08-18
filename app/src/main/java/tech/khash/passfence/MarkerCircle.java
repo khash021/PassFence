@@ -5,16 +5,16 @@ import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.Marker;
 
 /**
- * Custom class for saving Marker-Circle objects to be used in Map View.
- * This way we can  associate circle with the corresponding Marker so we can show the corresponding
- * info window when the circle is clicke
+ * Created by Khashayar "Khash" Mortazavi
  *
+ *      Custom class for saving Marker-Circle objects to be used in Map View.
+ *      This way we can  associate Circle with the corresponding Marker so we can show the
+ *      corresponding info window when the circle is clicked.
  */
 public class MarkerCircle {
 
     private Marker marker;
     private Circle circle;
-    private String tag;
 
     public MarkerCircle(Marker marker, Circle circle) {
         this.marker = marker;
