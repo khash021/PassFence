@@ -58,8 +58,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-//TODO: finish the activity on the results callback
-
+/**
+ * Created by Khashayar "Khash" Mortazavi
+ *
+ * This is the main class for Adding Geofence, or editing an existing Geofence
+ *
+ *  It gets all the necessary information from the user, Create corresponding Fence object, and then
+ *  adds/updates Fence and finally updates the main ArrayList
+ */
 
 public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, OnMapReadyCallback,
@@ -67,7 +73,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
     private static final String TAG = AddGeofenceActivity.class.getSimpleName();
 
-
+    //Google API client and map related items
     protected GoogleApiClient mGoogleApiClient;
     private GeofencingClient mGeofencingClient;
     private PendingIntent mGeofencePendingIntent;
@@ -77,20 +83,20 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     //geofence stuff
     private float mRadius;
     private long mDuration;
+
+    //Views
     private EditText mNameText;
     private TextView mRadiusText;
     private Button mButtonAdd;
-
     private CheckBox mBoxEnter, mBoxExit;
-
     private SeekBar seekBar;
-
     private Spinner mDurationSpinner;
 
+    //Edit mode variables
     private String editIntentExtra;
-
     private boolean editMode;
 
+    //for tracking any unsaved changes
     private boolean unsavedChanges = false;
 
     protected void onCreate(Bundle savedInstanceState) {

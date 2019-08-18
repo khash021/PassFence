@@ -9,9 +9,17 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
- * Custom class for saving, and tracking geofence objects
+ * Created by Khashayar "Khash" Mortazavi
+ *
+ * Custom class for our Fence object.
+ *
+ * This is our object that holds all the data for each location added by the user and holds
+ * all the corresponding data such as ID (name), duration, expiry, criteria, etc
+ *
+ * It has getters and setters and a public constructor.
+ *
+ * It also creates Geofence object from the Fence object to be used for adding geofences
  */
-
 public class Fence {
 
     private String id;
@@ -28,8 +36,15 @@ public class Fence {
 
     public static final long HOUR_IN_MILLISEC = 3600000;
 
-
-
+    /**
+     * Public constructor
+     * @param id : name of the Fence. Needs to be unique
+     * @param lat : latitude of the geofence
+     * @param lng : longitude of the geofence
+     * @param radius : radius of the geofence in meters
+     * @param duration : duration of the geofence input as hours
+     * @param type : criteria: ENTER, EXIT, or both
+     */
     public Fence(String id, double lat, double lng, float radius, long duration, int type) {
         this.id = id;
         this.latitude = lat;
@@ -37,10 +52,11 @@ public class Fence {
         this.radius = radius;
         this.type = type;
 
+        //Sets the duration (-1 means never expires)
         this.durationString = (duration == -1) ? App.getContext().getString(R.string.never) : String.valueOf(duration);
         this.duration = (duration == -1) ? -1 : duration * HOUR_IN_MILLISEC;
 
-
+        //Here we set the exact Epoch of expiry in milliseconds used for showing the calender of expiry
         if (duration == -1) {
             expiaryTimeMilliSec = -1;
         } else {
@@ -54,14 +70,6 @@ public class Fence {
      */
     public String getId() {
         return id;
-    }
-
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
     }
 
     public LatLng getLatLng() {
@@ -96,13 +104,15 @@ public class Fence {
         }
     }//isActive
 
+    //This is used for adding this to our circle and marker, so we can extract the corresponding fence
+    //object from the marker/circle on map
     public String getSnippet() {
         String output;
         output = id + "," + getExpiary().trim() + "," + getStringType();
         return output;
-    }
+    }//getSnippet
 
-
+    //It defines whether the fence is expired, never expires, or returns the date of expiry
     public String getExpiary() {
         if (expiaryTimeMilliSec == -1) {
             return App.getContext().getString(R.string.never);
@@ -112,7 +122,7 @@ public class Fence {
             final DateFormat dateFormat = new SimpleDateFormat("MMM.dd 'at' HH:mm");
             return App.getContext().getString(R.string.expires_colon) + " "  +dateFormat.format(expiaryTimeMilliSec);
         }
-    }
+    }//getExpiary
 
     public String getStringType() {
         switch (type) {
@@ -130,7 +140,6 @@ public class Fence {
     //helper method for getting the spinner index based on the duration
     public int getDurationIndex() {
         switch (durationString) {
-
             case "1":
                 return 0;
             case "2":
