@@ -74,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
 
     //TODO: add about, privacy policy, help
 
+    //TODO: buttons theme (color, whatever, they look ugly as shit right now
+
     private final static String TAG = MainActivity.class.getSimpleName();
 
     public final static String FENCE_EDIT_EXTRA_INTENT = "fence-edit-extra-intent";
@@ -569,11 +571,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
             @Override
             public void onClick(DialogInterface dialog, int id) {
 
-//                ActivityCompat.requestPermissions(activity,
-//                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-//                        LOCATION_PERMISSION_REQUEST_CODE);
-
-                //TODO: not working properly, keep going to settings
+                //TODO: test on all devices
                 //first check to see if the user has denied permission before
                 if (ContextCompat.checkSelfPermission(context,
                         android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
@@ -581,7 +579,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                     // shouldShowRequestPermissionRationale will return false. If that is false, and
                     //the build version is higher than 23 (that feature is only available to >= 23
                     //then send them to the
-                    if (Build.VERSION.SDK_INT >= 23 && (activity.shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
+                    if (Build.VERSION.SDK_INT >= 23 && !(activity.shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
                         //This is the case when the user checked the box, so we send them to the settings
                         openPermissionSettings(activity);
                     } else {
