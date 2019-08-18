@@ -6,7 +6,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -14,21 +13,20 @@ import java.util.ArrayList;
 /**
  * Created by Khashayar "Khash" Mortazavi
  *
- * Main adapter class to be used with RecyclerView in the ListViewGeofenceActivity
+ * Main adapter class to be used with RecyclerView in the MainActivity
  */
 
 
 public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.FenceViewHolder> {
 
-    private static final String TAG = FenceListAdapter.class.getSimpleName();
 
     //TODO: add functionality for the active/inactive checkbox
-    //Removes toasts
+
     //list of data
     private final ArrayList<Fence> fenceArrayList;
     //inflater used for creating the view
     private LayoutInflater inflater;
-
+    //context
     private Context context;
 
     //This is our listener implemented as an interface, to be used in the Activity
@@ -39,7 +37,7 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
      */
     public interface ListItemLongClickListener {
         void onListItemLongClick(int clickedItemIndex);
-    }
+    }//ListItemLongClickListener
 
     /**
      * Public constructor
@@ -75,23 +73,21 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
     public void onBindViewHolder(@NonNull FenceListAdapter.FenceViewHolder holder, int position) {
         //Get the corresponding Fence object
         Fence fence = fenceArrayList.get(position);
-
+        //check for null fence
         if (fence == null) {
             return;
         }
 
         //extract data and set them
+        //name
         holder.idTextView.setText(fence.getId());
-
+        //active/expired
         String activeText = (fence.isActive()) ? context.getString(R.string.active) : context.getString(R.string.inactive);
         holder.activeTextView.setText(activeText);
-
+        //expiry
         String detail = context.getString(R.string.expires_colon) + " " + fence.getExpiary() +
                  " - " + context.getString(R.string.criteria_colon) + " " + fence.getStringType();
         holder.detailTextView.setText(detail);
-
-        holder.activeCheckBox.setChecked(fence.isActive());
-
     }//onBindViewHolder
 
     @Override
@@ -105,27 +101,23 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
 
     //Inner class for the view holder
     class FenceViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
-
         //our views
         final TextView idTextView, activeTextView, detailTextView;
-        final CheckBox activeCheckBox;
         final FenceListAdapter fenceListAdapter;
         private Context context;
 
         //constructor
-        public FenceViewHolder(View itemView, FenceListAdapter adapter, Context context) {
+        private FenceViewHolder(View itemView, FenceListAdapter adapter, Context context) {
             super(itemView);
             this.context = context;
             //find view
             idTextView = itemView.findViewById(R.id.list_text_id);
             activeTextView = itemView.findViewById(R.id.list_text_active);
             detailTextView = itemView.findViewById(R.id.list_text_detail);
-            activeCheckBox = itemView.findViewById(R.id.list_box_active);
             //adapter
             this.fenceListAdapter = adapter;
             //for click listener
             itemView.setOnLongClickListener(this);
-
         }//FenceViewHolder
 
         @Override
