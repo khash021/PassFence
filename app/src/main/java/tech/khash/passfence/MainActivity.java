@@ -60,17 +60,19 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements FenceListAdapter.ListItemLongClickListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        NavigationView.OnNavigationItemSelectedListener{
-
-    //TODO: add modify geofence both from list and map view
-
-    //TODO: comment methods
+        NavigationView.OnNavigationItemSelectedListener {
 
     //TODO: remove unused methods all across (Analyze > inspect code)
 
     //TODO: add recreate boolean for all the stuff that comes back to activity
 
     //TODO: check nav header icon size
+
+    //TODO: check for any variable/method that can be deleted or the scope
+
+    //TODO: askLocationPermission needs work
+
+    //TODO: add about, privacy policy, help
 
     private final static String TAG = MainActivity.class.getSimpleName();
 
@@ -94,12 +96,17 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     protected GoogleApiClient mGoogleApiClient;
     private GeofencingClient mGeofencingClient;
 
-    //adapter
+    //mAdapter
     private ArrayList<Fence> mFenceArrayList;
-    private FenceListAdapter adapter;
-    private RecyclerView recyclerView;
+    private FenceListAdapter mAdapter;
+    private RecyclerView mRecyclerView;
 
-    DrawerLayout drawerLayout;
+    //drawer layout used for navigation drawer
+    private DrawerLayout mDrawerLayout;
+
+    //for tracking changes that needs the list to be updated/recreated
+    private boolean needsUpdate = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,34 +121,32 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         ActionBar actionbar = getSupportActionBar();
         //Enable app bar home button
         actionbar.setDisplayHomeAsUpEnabled(true);
-        //Make it use the icon
+        //Set the icon
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
         //In order for the button to open the menu we need to override onOption Item selected (below onCreate)
 
         //get the drawer layout and navigation drawer
-        drawerLayout =findViewById(R.id.drawer_layout);
-        NavigationView navigationView =findViewById(R.id.nav_view);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         if (navigationView != null) {
             navigationView.setNavigationItemSelectedListener(this);
         }
 
-
         //check for location permission and ask for it
         if (!checkLocationPermission(this)) {
-
             askLocationPermission(this, this);
         } //permission
 
         //create notification channel
         createNotificationChannel();
 
+        //add the add banner
         addBannerAd();
-
 
         //view containing the empty view
         LinearLayout emptyView = findViewById(R.id.empty_view);
 
-        //get the arrayList, and set the empty view if the array is empty
+        //get the arrayList, and set the visibility of empty view accordingly
         mFenceArrayList = loadArrayList(this);
         if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
             emptyView.setVisibility(View.VISIBLE);
@@ -150,21 +155,23 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         }
 
         // Get a handle to the RecyclerView.
-        recyclerView = findViewById(R.id.recycler_view);
-        // Create an adapter and supply the data to be displayed.
-        adapter = new FenceListAdapter(this, mFenceArrayList, this);
-        // Connect the adapter with the RecyclerView.
-        recyclerView.setAdapter(adapter);
+        mRecyclerView = findViewById(R.id.recycler_view);
+        // Create an mAdapter and supply the data to be displayed.
+        mAdapter = new FenceListAdapter(this, mFenceArrayList, this);
+        // Connect the mAdapter with the RecyclerView.
+        mRecyclerView.setAdapter(mAdapter);
         // Give the RecyclerView a default layout manager.
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         //Add divider between items using the DividerItemDecoration
-        DividerItemDecoration decoration = new DividerItemDecoration(recyclerView.getContext(),
+        DividerItemDecoration decoration = new DividerItemDecoration(mRecyclerView.getContext(),
                 DividerItemDecoration.VERTICAL);
-        recyclerView.addItemDecoration(decoration);
-
+        mRecyclerView.addItemDecoration(decoration);
 
         // Kick off the request to build GoogleApiClient.
         buildGoogleApiClient();
+
+        //create an instance of the Geofencing client to access the location APIs
+        mGeofencingClient = LocationServices.getGeofencingClient(this);
 
         //find the fab and set it up
         FloatingActionButton fabAddContent = findViewById(R.id.fab_add_content);
@@ -172,14 +179,12 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
             @Override
             public void onClick(View v) {
                 Intent addIntent = new Intent(MainActivity.this, AddGeofenceActivity.class);
-                //TODO: change this to activity for results
+                //needs update
+                needsUpdate = true;
+                //TODO: activity for results?
                 startActivity(addIntent);
             }
         });
-
-        //create an instance of the Geofencing client to access the location APIs
-        mGeofencingClient = LocationServices.getGeofencingClient(this);
-
     }//onCreate
 
 
@@ -188,14 +193,11 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         super.onResume();
         //resume adview
         mAdView.resume();
+        //check for update boolean
+        if (needsUpdate) {
+            //TODO
+        }
     }//onResume
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        //pause adview (Pauses any extra processing associated with this ad view.)
-        mAdView.pause();
-    }//onPause
 
     @Override
     protected void onStart() {
@@ -204,6 +206,13 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
             mGoogleApiClient.connect();
         }
     }//onStart
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //pause adview (Pauses any extra processing associated with this ad view.)
+        mAdView.pause();
+    }//onPause
 
     @Override
     protected void onStop() {
@@ -248,43 +257,47 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         switch (item.getItemId()) {
             case android.R.id.home:
                 //open navigation drawer
-                drawerLayout.openDrawer(GravityCompat.START);
+                mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
             case R.id.action_refresh:
                 recreate();
                 return true;
             case R.id.action_sort_name_ascending:
+                //check for empty list and show a Toast
                 if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
-                    Toast.makeText(getApplicationContext(), "List is empty", Toast.LENGTH_SHORT).show();
+                    displayToast(App.getContext().getString(R.string.list_empty_toast));
                     return true;
                 }
                 sortNameAscending();
                 return true;
             case R.id.action_sort_name_descending:
+                //check for empty list and show a Toast
                 if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
-                    Toast.makeText(getApplicationContext(), "List is empty", Toast.LENGTH_SHORT).show();
+                    displayToast(App.getContext().getString(R.string.list_empty_toast));
                     return true;
                 }
                 sortNameDescending();
                 return true;
             case R.id.action_sort_expiry_ascending:
+                //check for empty list and show a Toast
                 if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
-                    Toast.makeText(getApplicationContext(), "List is empty", Toast.LENGTH_SHORT).show();
+                    displayToast(App.getContext().getString(R.string.list_empty_toast));
                     return true;
                 }
                 sortExpiryAscending();
                 return true;
             case R.id.action_sort_expiry_descending:
+                //check for empty list and show a Toast
                 if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
-                    Toast.makeText(getApplicationContext(), "List is empty", Toast.LENGTH_SHORT).show();
+                    displayToast(App.getContext().getString(R.string.list_empty_toast));
                     return true;
                 }
                 sortExpiryDescending();
                 return true;
             case R.id.action_delete_all:
-                //TODO: check to make sure the list is not empty
+                //check for empty list and show a Toast
                 if (mFenceArrayList == null || mFenceArrayList.size() < 1) {
-                    Toast.makeText(getApplicationContext(), "No registered locations", Toast.LENGTH_SHORT).show();
+                    displayToast(App.getContext().getString(R.string.no_geofence_show_toast));
                     return true;
                 }
                 deleteAllList();
@@ -350,12 +363,15 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 return true;
             case R.id.nav_help:
                 //TODO:
+                displayToast("Help");
                 return true;
             case R.id.nav_about:
                 //TODO:
+                displayToast("About");
                 return true;
             case R.id.nav_privacy_policy:
                 //TODO:
+                displayToast("Privacy Policy");
                 return true;
             default:
                 return false;
@@ -402,9 +418,8 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                     ---------------    HELPER METHODS    ---------------
     ------------------------------------------------------------------------------------------*/
 
-
+    //Returns the main ArrayList<Fence> for the app
     public static ArrayList<Fence> loadArrayList(Context context) {
-
         //create Gson object
         Gson gson = new Gson();
         //get reference to the shared pref
@@ -423,7 +438,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     }//loadArrayList
 
     /**
-     * Helper method for saving the new arrayList to the the old one, it adds all of them.
+     * Helper method for saving the new ArrayList<Fence> by replcaing the old one
      *
      * @param context        : context
      * @param inputArrayList : new arraylist to be added on top of the old one
@@ -484,44 +499,46 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         editor.apply();
     }//updateArrayList
 
-    public static void eraseAllArrays(Context context) {
+    //This deletes the Arraylist from the pref
+    private static void eraseAllArrays(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(ARRAY_PREF_KEY).apply();
-        Toast.makeText(context, "Data erased", Toast.LENGTH_SHORT).show();
     }//eraseAllArray
 
+    //This removes all the geofence by unregisterring them, and deleting the arraylist
     public static void removeAllFences(Context context) {
+        //get the list
         ArrayList<Fence> fenceArrayList = loadArrayList(context);
+        //check for empty list and show toast
         if (fenceArrayList == null) {
-            Toast.makeText(context, "No Geofence", Toast.LENGTH_SHORT).show();
+            displayToast(App.getContext().getString(R.string.no_geofence_show_toast));
             Log.v(TAG, "No geofence to remove");
             return;
         }
+        //make a list of all registered fences' ids
         ArrayList<String> idArrayList = new ArrayList<>();
         for (Fence fence : fenceArrayList) {
             idArrayList.add(fence.getId());
         }
 
+        //get the geofencing client and remove all fences
         GeofencingClient geofencingClient = LocationServices.getGeofencingClient(context);
         geofencingClient.removeGeofences(idArrayList);
 
         //also clean the internal arrayList
         eraseAllArrays(context);
-
-        Toast.makeText(context, "Geofences removed", Toast.LENGTH_SHORT).show();
+        displayToast(App.getContext().getString(R.string.all_locations_removed_toast));
         Log.v(TAG, "Geofences removed");
     }//removeAllFences
 
     //helper methods to get the bounds of the circle (radius in meters)
-    //TODO: use these to update when circle is visible as well
     public static LatLng swCorner(LatLng center, float radius) {
         double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
         LatLng southwestCorner =
                 SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 225.0);
         return southwestCorner;
     }//swCorner
-
     public static LatLng neCorner(LatLng center, float radius) {
         double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
         LatLng northeastCorner =
@@ -529,7 +546,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         return northeastCorner;
     }//neCorner
 
-
+    //checks location permission
     public static boolean checkLocationPermission(Context context) {
         //check for location permission and ask for it
         return ContextCompat.checkSelfPermission(context,
@@ -537,6 +554,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     }//checkLocationPermission
 
     //TODO: check this method and test again
+
     /**
      * Helper method for showing a message to the user informing them about the benefits of turning on their
      * location. and also can direct them to the location settings of their phone
@@ -636,6 +654,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         activity.startActivity(intent);
     }//openPermissionSettings
 
+    //Adds the banner Ad
     private void addBannerAd() {
         //find the ad view
         mAdView = findViewById(R.id.ad_view);
@@ -660,8 +679,8 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 return o1.getId().compareTo(o2.getId());
             }
         });
-        //notify the adapter that the data has changed, and it should update
-        adapter.notifyDataSetChanged();
+        //notify the mAdapter that the data has changed, and it should update
+        mAdapter.notifyDataSetChanged();
     }//sortNameAscending
 
     //Helper method for sorting list based on their name (ascending)
@@ -672,8 +691,8 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 return o2.getId().compareTo(o1.getId());
             }
         });
-        //notify the adapter that the data has changed, and it should update
-        adapter.notifyDataSetChanged();
+        //notify the mAdapter that the data has changed, and it should update
+        mAdapter.notifyDataSetChanged();
     }//sortNameAscending
 
     ////Helper method for sorting list based on their expiray (ascending)
@@ -687,8 +706,8 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 return t1.compareTo(t2);
             }
         });
-        //notify the adapter that the data has changed, and it should update
-        adapter.notifyDataSetChanged();
+        //notify the mAdapter that the data has changed, and it should update
+        mAdapter.notifyDataSetChanged();
     }//sortExpiryAscending
 
     ////Helper method for sorting list based on their expiray (descending)
@@ -702,15 +721,14 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 return t2.compareTo(t1);
             }
         });
-        //notify the adapter that the data has changed, and it should update
-        adapter.notifyDataSetChanged();
+        //notify the mAdapter that the data has changed, and it should update
+        mAdapter.notifyDataSetChanged();
     }//sortExpiryAscending
 
-    //Helper method for showing the dialog for erasing all data
+    //Helper method for showing the dialog for deleting all data
     private void showDeleteAllDialog() {
-
         //create the builder
-        AlertDialog.Builder builder =new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         //add message and button functionality
         builder.setMessage(R.string.delete_all_dialog_msg)
@@ -733,7 +751,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         dialog.show();
     }//showUnsavedChangesDialog
 
-    //helper method for showing the dialog
+    //helper method for showing the dialog when the user long clicks on item
     private void showLongClickDialog(final Fence fence) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         dialogBuilder.setTitle(fence.getId());
@@ -768,7 +786,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         //get the id
         String fenceId = fence.getId();
         //create the builder
-        AlertDialog.Builder builder =new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         String message = getString(R.string.dialog_delete_fence) + " \"" + fenceId + "\"" +
                 getString(R.string.question_mark);
@@ -797,7 +815,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     //helper method for deleting the geofence
     private void deleteGeofence(Fence targetFence) {
         //get the id of the fence
-        String fenceId = targetFence.getId();
+        final String fenceId = targetFence.getId();
         //retrieve the array list of Fences
         mFenceArrayList = loadArrayList(this);
 
@@ -828,14 +846,14 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
             @Override
             public void onSuccess(Void aVoid) {
                 Log.v(TAG, "Geofence removed successfully");
-                Toast.makeText(getApplicationContext(), getString(R.string.geofence_removed), Toast.LENGTH_SHORT).show();
+                displayToast("\"" + fenceId + "\" " + App.getContext().getString(R.string.geofence_removed) );
             }
         })
                 .addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.v(TAG, "Geofence removal error");
-                        Toast.makeText(getApplicationContext(), getString(R.string.error_remove_geofence), Toast.LENGTH_SHORT).show();
+                        displayToast(App.getContext().getString(R.string.error_remove_geofence));
                     }
                 });
 
@@ -851,6 +869,10 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         //recreate activity
         recreate();
     }//deleteGeofence
+
+    private static void displayToast(String message) {
+        Toast.makeText(App.getContext(), message, Toast.LENGTH_SHORT).show();
+    }//displayToast
 
 
 }//MainActivity
