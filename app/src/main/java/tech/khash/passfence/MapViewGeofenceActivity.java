@@ -29,11 +29,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
-//TODO: bring up the info window when clicking circle
-
-//TODO: checkMapReady before all map operations
-
-//TODO: respond to info window clicks to delete/modify
+/**
+ * Created by Khashayar "Khash" Mortazavi
+ *
+ * This is the class that hosts a Google Map fragment and shows the registered geofences on the map
+ */
 
 public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleMap.OnCircleClickListener {
@@ -41,7 +41,6 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
     private final String TAG = MapViewGeofenceActivity.class.getSimpleName();
 
     private GoogleMap mMap;
-    private FusedLocationProviderClient mFusedLocationClient;
 
     private ArrayList<Fence> fenceArrayList;
     private ArrayList<MarkerCircle> markerCircleArrayList;
@@ -55,7 +54,7 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         fenceArrayList = MainActivity.loadArrayList(this);
 
@@ -81,9 +80,58 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
         //set click listener for the circles and callbacks will be send to this activity
         mMap.setOnCircleClickListener(this);
 
+        //add the locations to the map
         addGeofenceToMap();
     }//onMapReady
 
+
+
+    //This gets called, when the circle is clicked and we will show the corresponding marker's info window
+    @Override
+    public void onCircleClick(Circle circle) {
+        //get the name
+        String tag = (String) circle.getTag();
+
+        //find the corresponding markerCircle object and show the marker's info window
+        for (MarkerCircle markerCircle : markerCircleArrayList) {
+            //get the tag
+            String markerCircleTag = (String) markerCircle.getTag();
+            if (markerCircleTag.equalsIgnoreCase(tag)) {
+                //get the corresponding marker
+                Marker marker = markerCircle.getMarker();
+                //show the marker's info window
+                marker.showInfoWindow();
+                return;
+            }//if
+        }//for
+    }//onCircleClick
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        //get the inflater
+        MenuInflater inflater = getMenuInflater();
+
+        //inflate the menu
+        inflater.inflate(R.menu.menu_map, menu);
+
+        //You must return true for the menu to be displayed; if you return false it will not be shown.
+        return true;
+    }//onCreateOptionsMenu
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_add_map) {
+            Intent intent = new Intent(MapViewGeofenceActivity.this, AddGeofenceActivity.class);
+            startActivity(intent);
+            return true;
+        }//if
+
+        return super.onOptionsItemSelected(item);
+    }//onOptionsItemSelected
+
+    /* Helper method for adding locations to the map from the arrayList
+       This method only gets called from onMapReady, so there is no need to check for null map */
     private void addGeofenceToMap() {
 
         //check to make sure that the list is not null in case there is no fence added
@@ -156,54 +204,7 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
         int padding = (int) (width * 0.1); // offset from edges of the map 10% of screen
 
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));//this is the pixel padding
-
-
     }//addGeofenceToMap
-
-    //This gets called, when the circle is clicked and we will show the corresponding marker's info window
-    @Override
-    public void onCircleClick(Circle circle) {
-        //get the name
-        String tag = (String) circle.getTag();
-
-        //find the corresponding markerCircle object and show the marker's info window
-        for (MarkerCircle markerCircle : markerCircleArrayList) {
-            //get the tag
-            String markerCircleTag = (String) markerCircle.getTag();
-            if (markerCircleTag.equalsIgnoreCase(tag)) {
-                //get the corresponding marker
-                Marker marker = markerCircle.getMarker();
-                //show the marker's info window
-                marker.showInfoWindow();
-                return;
-            }//if
-        }//for
-
-    }//onCircleClick
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        //get the inflater
-        MenuInflater inflater = getMenuInflater();
-
-        //inflate the menu
-        inflater.inflate(R.menu.menu_map, menu);
-
-        //You must return true for the menu to be displayed; if you return false it will not be shown.
-        return true;
-    }//onCreateOptionsMenu
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_add_map) {
-            Intent intent = new Intent(MapViewGeofenceActivity.this, AddGeofenceActivity.class);
-            startActivity(intent);
-            return true;
-        }//if
-
-        return super.onOptionsItemSelected(item);
-    }//onOptionsItemSelected
 
     /**
      * This class is for customizing Info Windows
@@ -250,23 +251,25 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
             TextView nameText = view.findViewById(R.id.text_name);
             TextView durationText = view.findViewById(R.id.text_duration);
             TextView criteriaText = view.findViewById(R.id.text_criteria);
-
+            //get the snippet from marker that contains the info regarding that geofence
             String snippet = marker.getSnippet();
 
-            //TODO: add try/catch
-            String[] properties = snippet.trim().split(",");
-            String name = properties[0];
-            String expiry = properties[1];
-            String type = properties[2];
+            //use a try catch to get the info and set them accordingly
+            try {
+                String[] properties = snippet.trim().split(",");
+                String name = properties[0];
+                String expiry = properties[1];
+                String type = properties[2];
 
-            String text = getString(R.string.id_colon) + " " + name;
-            String expires = getString(R.string.expires_colon) + " " + expiry;
-            String criteria = getString(R.string.criteria_colon) + " " + type;
-            nameText.setText(text);
-            durationText.setText(expires);
-            criteriaText.setText(criteria);
+                String text = getString(R.string.id_colon) + " " + name;
+                String expires = getString(R.string.expires_colon) + " " + expiry;
+                String criteria = getString(R.string.criteria_colon) + " " + type;
+                nameText.setText(text);
+                durationText.setText(expires);
+                criteriaText.setText(criteria);
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting snippet properties from marker + " + marker.getId(), e);
+            }
         }//render
     }//CustomInfoWindowAdapter
-
-
 }//MapViewGeofenceActivity

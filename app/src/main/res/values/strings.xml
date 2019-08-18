@@ -94,7 +94,7 @@
     <string name="error">Error</string>
 
     <!--Map View-->
-    <string name="no_geofence_show_toast">No Geofences to show</string>
+    <string name="no_geofence_show_toast">No registered locations</string>
     <string name="id_colon">Id:</string>
     <string name="refresh">Refresh</string>
 
