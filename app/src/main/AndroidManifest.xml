@@ -16,6 +16,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/ad_app_id"/>
+
         <service android:name=".GeofenceTransitionsIntentService" />
 
         <meta-data
@@ -52,6 +56,7 @@
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"/>
 
+        <!--Activity required for showing the add in case the user clicks the ad-->
         <activity
             android:name="com.google.android.gms.ads.AdActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />

@@ -28,12 +28,13 @@
 
     <!--Ads stuff-->
     <string name="banner_ad_unit_id_test" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
-    <string name="interstitial_ad_unit_id_test" translatable="false">ca-app-pub-3940256099942544/1033173712</string>
+    <string name="banner_ad_app_id" translatable="false">ca-app-pub-5875569058891842/9008946581</string>
+    <string name="ad_app_id" translatable="false">ca-app-pub-5875569058891842~7947146351</string>
+
     <string name="no_saved_location">No saved locations!</string>
     <string name="add_location_empty_view_text">Add locations using the \"+\" button or from menu</string>
 
-    <string name="banner_ad_app_id" translatable="false">ca-app-pub-5875569058891842/9008946581</string>
-    <string name="ad_app_id" translatable="false">ca-app-pub-5875569058891842~7947146351</string>
+
 
 
     <!--Add Geofence class-->
