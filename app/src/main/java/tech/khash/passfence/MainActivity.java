@@ -72,8 +72,6 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
 
     //TODO: add recreate boolean for all the stuff that comes back to activity
 
-    //TODO: check nav header icon size
-
     //TODO: check for any variable/method that can be deleted or the scope
 
     //TODO: buttons theme (color, whatever, they look ugly as shit right now
@@ -197,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         super.onResume();
         //resume adview
         mAdView.resume();
-        }//onResume
+    }//onResume
 
     @Override
     protected void onStart() {
@@ -560,6 +558,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 225.0);
         return southwestCorner;
     }//swCorner
+
     public static LatLng neCorner(LatLng center, float radius) {
         double distanceFromCenterToCorner = ((double) radius) * Math.sqrt(2.0);
         LatLng northeastCorner =
@@ -776,14 +775,23 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     //helper method for showing the dialog when the user long clicks on item
     private void showLongClickDialog(final Fence fence) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+//        String expiry = fence.getExpiary();
+        String expiry = getString(R.string.expired);
         dialogBuilder.setTitle(fence.getId());
-        String[] list = {getString(R.string.edit), getString(R.string.delete), getString(R.string.cancel)};
+        //show re-activate if it is expired
+        String[] list = new String[3];
+        if (expiry.equals(getString(R.string.expired))) {
+            list = new String[]{getString(R.string.reactivate), getString(R.string.delete), getString(R.string.cancel)};
+        } else {
+            list = new String[]{getString(R.string.edit), getString(R.string.delete), getString(R.string.cancel)};
+        }
         dialogBuilder.setItems(list, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int index) {
                 switch (index) {
                     case 0:
-                        //edit mode
+                        //reactivate
+                        //TODO: for now we are just sending them to the edit
                         Intent editIntent = new Intent(getApplicationContext(), AddGeofenceActivity.class);
                         editIntent.putExtra(FENCE_EDIT_EXTRA_INTENT, fence.getId());
                         //set the update boolean
@@ -869,7 +877,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
             @Override
             public void onSuccess(Void aVoid) {
                 Log.v(TAG, "Geofence removed successfully");
-                displayToast("\"" + fenceId + "\" " + App.getContext().getString(R.string.geofence_removed) );
+                displayToast("\"" + fenceId + "\" " + App.getContext().getString(R.string.geofence_removed));
                 //set the update boolean true
             }
         })

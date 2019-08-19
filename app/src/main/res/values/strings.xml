@@ -172,6 +172,8 @@
     <string name="list_empty_toast">List is empty</string>
     <string name="all_locations_removed_toast">All locations removed</string>
 
+    <string name="reactivate">Reactivate</string>
+
 
     <!--About text-->
     <string name="about_text">Have you ever removed your phone’s password (lock screen) while you

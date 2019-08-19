@@ -72,6 +72,8 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status>, OnMapReadyCallback,
         GoogleMap.OnCameraIdleListener {
 
+    //TODO: modify duration to include days too
+
     private static final String TAG = AddGeofenceActivity.class.getSimpleName();
 
     //Google API client and map related items
