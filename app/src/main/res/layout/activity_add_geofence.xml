@@ -52,7 +52,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="@string/name_add_fence_hint"
-                android:inputType="textCapSentences|textCapWords" />
+                android:inputType="textCapWords" />
 
         </LinearLayout>
 
@@ -161,6 +161,8 @@
                 android:id="@+id/button_add_geo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:background="@drawable/button_background"
                 android:text="@string/add_geofence" />
 
         </LinearLayout>
