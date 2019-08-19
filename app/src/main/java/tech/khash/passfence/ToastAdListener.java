@@ -2,7 +2,6 @@ package tech.khash.passfence;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
@@ -59,8 +58,6 @@ public class ToastAdListener extends AdListener {
         }//switch
         Log.v(TAG, "onAdFailedToLoad called: " + mErrorReason );
         //the format, replaces %s with our message
-        Toast.makeText(mContext,
-                String.format("onAdFailedToLoad(%s)", mErrorReason), Toast.LENGTH_SHORT).show();
 
     }//onAdFailedToLoad
 
