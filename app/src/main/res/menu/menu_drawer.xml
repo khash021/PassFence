@@ -1,29 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_add_location"
-            android:icon="@drawable/ic_add_black"
-            android:title="@string/add_new_location" />
-        <item
-            android:id="@+id/nav_edit_location"
-            android:icon="@drawable/ic_edit_black"
-            android:title="@string/edit_location" />
-        <item
-            android:id="@+id/nav_map_view"
-            android:icon="@drawable/ic_map_black"
-            android:title="@string/view_locations_on_map" />
-
-    </group>
-
-    <group android:checkableBehavior="single">
-
-        <item
-            android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_settings_black"
-            android:title="@string/settings"/>
-    </group>
+    <item
+        android:id="@+id/nav_add_location"
+        android:icon="@drawable/ic_add_black"
+        android:title="@string/add_new_location" />
+    <item
+        android:id="@+id/nav_edit_location"
+        android:icon="@drawable/ic_edit_black"
+        android:title="@string/edit_location" />
+    <item
+        android:id="@+id/nav_map_view"
+        android:icon="@drawable/ic_map_black"
+        android:title="@string/view_locations_on_map" />
+    <item
+        android:id="@+id/nav_settings"
+        android:icon="@drawable/ic_settings_black"
+        android:title="@string/settings"/>
 
     <item android:title="@string/communication">
         <menu>
@@ -55,11 +48,6 @@
     <item
         android:id="@+id/nav_privacy_policy"
         android:title="@string/privacy_policy" />
-
-
-
-
-
 
 
 </menu>

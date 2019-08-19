@@ -66,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         GoogleApiClient.OnConnectionFailedListener,
         NavigationView.OnNavigationItemSelectedListener {
 
+    //TODO: make needs update in preferences, so if the user didnt add anything or edit, then it wont do it
+
     //TODO: remove unused methods all across (Analyze > inspect code)
 
     //TODO: add recreate boolean for all the stuff that comes back to activity
@@ -116,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.v(TAG, "onCreate Called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //Set the tool bar
@@ -187,26 +190,26 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 Intent addIntent = new Intent(MainActivity.this, AddGeofenceActivity.class);
                 //needs update
                 needsUpdate = true;
-                //TODO: activity for results?
                 startActivity(addIntent);
             }
         });
     }//onCreate
 
-
     @Override
     protected void onResume() {
+        Log.v(TAG, "onResume Called");
         super.onResume();
         //resume adview
         mAdView.resume();
-        //check for update boolean
-        if (needsUpdate) {
-            //TODO
-        }
-    }//onResume
+        }//onResume
 
     @Override
     protected void onStart() {
+        Log.v(TAG, "onStart Called");
+        //check for update boolean
+        if (needsUpdate) {
+            recreate();
+        }
         super.onStart();
         if (!mGoogleApiClient.isConnecting() || !mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
@@ -215,13 +218,21 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
 
     @Override
     protected void onPause() {
+        Log.v(TAG, "onPause Called");
         super.onPause();
         //pause adview (Pauses any extra processing associated with this ad view.)
         mAdView.pause();
+        //if the navigation drawer is open, we close it so when the user is directed back, it doesn't stay open
+        if (mDrawerLayout != null) {
+            if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+            }
+        }
     }//onPause
 
     @Override
     protected void onStop() {
+        Log.v(TAG, "onStop Called");
         super.onStop();
         if (mGoogleApiClient.isConnecting() || mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
@@ -230,10 +241,26 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
 
     @Override
     protected void onDestroy() {
+        Log.v(TAG, "onDestroy Called");
         super.onDestroy();
         // Destroy the AdView.
         mAdView.destroy();
     }//onDestroy
+
+    /**
+     * Handles the Back button: closes the nav drawer.
+     */
+    @Override
+    public void onBackPressed() {
+        //If the user clicks the systems back button and if the navigation drawer is open, it closes it
+        if (mDrawerLayout != null) {
+            if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                super.onBackPressed();
+            }
+        }
+    }//onBackPressed
 
     protected synchronized void buildGoogleApiClient() {
         Log.v(TAG, "buildGoogleApiClient called");
@@ -318,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         switch (item.getItemId()) {
             case R.id.nav_add_location:
                 Intent addIntent = new Intent(MainActivity.this, AddGeofenceActivity.class);
-                //TODO: change this to activity for results
+                needsUpdate = true;
                 startActivity(addIntent);
                 return true;
             case R.id.nav_edit_location:
@@ -372,32 +399,23 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 displayToast("Help");
                 return true;
             case R.id.nav_about:
-                //TODO:
-                displayToast("About");
+                Intent aboutIntent = new Intent(MainActivity.this, AboutActivity.class);
+                startActivity(aboutIntent);
                 return true;
             case R.id.nav_privacy_policy:
-                //TODO:
-                displayToast("Privacy Policy");
+                try {
+                    Uri addressUri = Uri.parse("https://firebasestorage.googleapis.com/v0/b/irecycle-1522273491755.appspot.com/o/PrivacyPolicyPassFence.pdf?alt=media&token=bddf80a6-bdee-45fc-bef1-70214e02cb19");
+                    Intent privacyIntent = new Intent(Intent.ACTION_VIEW, addressUri);
+                    startActivity(privacyIntent);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error opening Privacy Policy page", e);
+
+                }
                 return true;
             default:
                 return false;
         }//switch
     }//onNavigationItemSelected
-
-    /**
-     * Handles the Back button: closes the nav drawer.
-     */
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer != null) {
-            if (drawer.isDrawerOpen(GravityCompat.START)) {
-                drawer.closeDrawer(GravityCompat.START);
-            } else {
-                super.onBackPressed();
-            }
-        }
-    }//onBackPressed
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -513,7 +531,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     }//eraseAllArray
 
     //This removes all the geofence by unregisterring them, and deleting the arraylist
-    public static void removeAllFences(Context context) {
+    private void removeAllFences(Context context) {
         //get the list
         ArrayList<Fence> fenceArrayList = loadArrayList(context);
         //check for empty list and show toast
@@ -535,6 +553,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         //also clean the internal arrayList
         eraseAllArrays(context);
         displayToast(App.getContext().getString(R.string.all_locations_removed_toast));
+        recreate();
         Log.v(TAG, "Geofences removed");
     }//removeAllFences
 
@@ -559,8 +578,6 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }//checkLocationPermission
 
-    //TODO: check this method and test again
-
     /**
      * Helper method for showing a message to the user informing them about the benefits of turning on their
      * location. and also can direct them to the location settings of their phone
@@ -575,7 +592,6 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
             @Override
             public void onClick(DialogInterface dialog, int id) {
 
-                //TODO: test on all devices
                 //first check to see if the user has denied permission before
                 if (ContextCompat.checkSelfPermission(context,
                         android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
@@ -772,9 +788,10 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 switch (index) {
                     case 0:
                         //edit mode
-                        //TODO: change to activity for results
                         Intent editIntent = new Intent(getApplicationContext(), AddGeofenceActivity.class);
                         editIntent.putExtra(FENCE_EDIT_EXTRA_INTENT, fence.getId());
+                        //set the update boolean
+                        needsUpdate = true;
                         startActivity(editIntent);
                         break;
                     case 1:
@@ -857,6 +874,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
             public void onSuccess(Void aVoid) {
                 Log.v(TAG, "Geofence removed successfully");
                 displayToast("\"" + fenceId + "\" " + App.getContext().getString(R.string.geofence_removed) );
+                //set the update boolean true
             }
         })
                 .addOnFailureListener(this, new OnFailureListener() {
@@ -874,16 +892,14 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         if (removeSuccess) {
             //update app's arrayList
             updateArrayList(this, mFenceArrayList);
+            //recreate activity
+            recreate();
         }
-
-        //recreate activity
-        recreate();
     }//deleteGeofence
 
     private static void displayToast(String message) {
         Toast.makeText(App.getContext(), message, Toast.LENGTH_SHORT).show();
     }//displayToast
-
 
 }//MainActivity
 
