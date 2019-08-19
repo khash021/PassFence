@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         GoogleApiClient.OnConnectionFailedListener,
         NavigationView.OnNavigationItemSelectedListener {
 
-    //TODO: make needs update in preferences, so if the user didnt add anything or edit, then it wont do it
+    //TODO: make needsUpdate in preferences, so if the user didnt add anything or edit, then it wont do it
 
     //TODO: remove unused methods all across (Analyze > inspect code)
 
@@ -75,10 +75,6 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     //TODO: check nav header icon size
 
     //TODO: check for any variable/method that can be deleted or the scope
-
-    //TODO: askLocationPermission needs work
-
-    //TODO: add about, privacy policy, help
 
     //TODO: buttons theme (color, whatever, they look ugly as shit right now
 
