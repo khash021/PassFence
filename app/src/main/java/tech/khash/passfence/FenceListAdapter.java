@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 /**
  * Created by Khashayar "Khash" Mortazavi
- *
+ * <p>
  * Main adapter class to be used with RecyclerView in the MainActivity
  */
 
@@ -84,7 +84,7 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
         holder.activeTextView.setText(activeText);
         //expiry
         String detail = context.getString(R.string.expires_colon) + " " + fence.getExpiry() +
-                 " - " + context.getString(R.string.criteria_colon) + " " + fence.getStringType();
+                " - " + context.getString(R.string.criteria_colon) + " " + fence.getStringType();
         holder.detailTextView.setText(detail);
     }//onBindViewHolder
 

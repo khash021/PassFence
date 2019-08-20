@@ -6,10 +6,6 @@
         android:icon="@drawable/ic_add_black"
         android:title="@string/add_new_location" />
     <item
-        android:id="@+id/nav_edit_location"
-        android:icon="@drawable/ic_edit_black"
-        android:title="@string/edit_location" />
-    <item
         android:id="@+id/nav_map_view"
         android:icon="@drawable/ic_map_black"
         android:title="@string/view_locations_on_map" />
@@ -34,11 +30,6 @@
                 android:title="@string/share" />
         </menu>
     </item>
-
-    <item
-        android:id="@+id/nav_help"
-        android:icon="@drawable/ic_help_black"
-        android:title="@string/help" />
 
     <item
         android:id="@+id/nav_about"

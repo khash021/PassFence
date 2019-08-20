@@ -10,13 +10,10 @@ public class ToastAdListener extends AdListener {
 
     private final String TAG = ToastAdListener.class.getSimpleName();
 
-    private Context mContext;
     private String mErrorReason;
 
     //public constructor
     public ToastAdListener(Context context) {
-        mContext = context;
-
     }//ToastAdListener
 
     @Override
@@ -60,17 +57,6 @@ public class ToastAdListener extends AdListener {
         //the format, replaces %s with our message
 
     }//onAdFailedToLoad
-
-    public String getErrorReason () {
-
-//        return mErrorReason == null ? "" : mErrorReason;
-        //above code is the same as below
-
-        if (mErrorReason == null) {
-            return "";
-        }
-        return mErrorReason;
-    }//getErrorReason
 
     @Override
     public void onAdLeftApplication() {

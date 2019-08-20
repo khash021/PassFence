@@ -61,11 +61,11 @@ import java.util.Locale;
 
 /**
  * Created by Khashayar "Khash" Mortazavi
- *
+ * <p>
  * This is the main class for Adding Geofence, or editing an existing Geofence
- *
- *  It gets all the necessary information from the user, Create corresponding Fence object, and then
- *  adds/updates Fence and finally updates the main ArrayList
+ * <p>
+ * It gets all the necessary information from the user, Create corresponding Fence object, and then
+ * adds/updates Fence and finally updates the main ArrayList
  */
 
 public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
@@ -219,7 +219,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
         seekBar.setProgress(10);
         mRadius = 50;
         mRadiusText = findViewById(R.id.text_radius);
-        mRadiusText.setText(String.valueOf((int)mRadius));
+        mRadiusText.setText(String.valueOf((int) mRadius));
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -395,7 +395,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
 
             //get a reference to the search box, so we can change the input type to cap words
             int id1 = searchView.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
-            EditText searchEditText = (EditText) searchView.findViewById(id1);
+            EditText searchEditText = searchView.findViewById(id1);
             searchEditText.setInputType(InputType.TYPE_TEXT_FLAG_CAP_WORDS);
 
             // use this method for search process
@@ -677,9 +677,6 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     }//updatedFence
 
 
-
-
-
     //Helper method for searching the address
     private void searchAddress(String query) {
         //check for geocoder availability
@@ -730,7 +727,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
             }//for
 
             //don't need to set bounds if there is only one result. Just move the camera
-            if (counter  <= 1) {
+            if (counter <= 1) {
                 LatLng latLng = new LatLng(addresses.get(0).getLatitude(), addresses.get(0).getLongitude());
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15.0f));
                 return;
@@ -840,7 +837,7 @@ public class AddGeofenceActivity extends AppCompatActivity implements GoogleApiC
     //Helper method for showing the dialog for unsaved data
     private void showUnsavedChangesDialog() {
         //create the builder
-        AlertDialog.Builder builder =new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         //add message and button functionality
         builder.setMessage(R.string.unsaved_changes_dialog_msg)

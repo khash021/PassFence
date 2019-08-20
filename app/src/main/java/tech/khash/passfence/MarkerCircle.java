@@ -25,11 +25,7 @@ public class MarkerCircle {
         return marker;
     }
 
-    public Circle getCircle() {
-        return circle;
-    }
-
     public String getTag() {
         return (String) circle.getTag();
     }
-}
+}//MarkerCircle

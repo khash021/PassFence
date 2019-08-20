@@ -7,7 +7,7 @@ import com.google.android.gms.location.GeofenceStatusCodes;
 
 /**
  * Created by Khashayar "Khash" Mortazavi
- *
+ * <p>
  * This get the error int code and returns the String description of the error
  */
 
@@ -16,7 +16,8 @@ public class GeofenceErrorMessages {
     /**
      * Prevents instantiation.
      */
-    private GeofenceErrorMessages() {}
+    private GeofenceErrorMessages() {
+    }
 
     /**
      * Returns the error string for a geofencing error code.

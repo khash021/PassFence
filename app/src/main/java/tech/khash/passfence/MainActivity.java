@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements FenceListAdapter.ListItemLongClickListener,
         GoogleApiClient.ConnectionCallbacks,
@@ -119,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //change the title
-        getSupportActionBar().setTitle(getString(R.string.app_name));
+        Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.app_name));
         //Set the menu icon
         ActionBar actionbar = getSupportActionBar();
         //Enable app bar home button
@@ -342,9 +343,6 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 needsUpdate = true;
                 startActivity(addIntent);
                 return true;
-            case R.id.nav_edit_location:
-                //TODO:
-                return true;
             case R.id.nav_map_view:
                 Intent mapViewIntent = new Intent(MainActivity.this, MapViewGeofenceActivity.class);
                 startActivity(mapViewIntent);
@@ -387,10 +385,6 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                         .setSubject(getResources().getString(R.string.share_dialog_title))
                         .setText(getResources().getString(R.string.google_play_address))
                         .startChooser();
-                return true;
-            case R.id.nav_help:
-                //TODO:
-                displayToast("Help");
                 return true;
             case R.id.nav_about:
                 Intent aboutIntent = new Intent(MainActivity.this, AboutActivity.class);

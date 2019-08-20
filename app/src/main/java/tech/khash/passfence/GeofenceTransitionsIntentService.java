@@ -10,12 +10,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.text.TextUtils;
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.TaskStackBuilder;
-import android.text.TextUtils;
-import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
@@ -25,13 +26,13 @@ import java.util.List;
 
 /**
  * Created by Khashayar "Khash" Mortazavi
- *
+ * <p>
  * This is the class (which extends IntentService) gets called when the registered geofences
  * are triggered.
- *
+ * <p>
  * Here we get the geofence that triggered this, and then extract the required data from it ( such
  * as the event that triggered it, the name of the fence.
- *
+ * <p>
  * This is also where we send the notification. All the notification properties are set from the
  * corresponding Fence object, and the app's share preferences
  */
@@ -54,6 +55,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
     /**
      * This is the meat of this class that handles the functionality.
+     *
      * @param intent : the intent that triggered this
      */
     @Override
@@ -75,7 +77,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
         //test to make sure it is of interest (entry or exit)
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
-                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT ) {
+                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
 
             // Get the geofences that were triggered. A single event can trigger multiple geofences.
             List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
@@ -166,7 +168,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
         boolean colorBoolean = sharedPreferences.getBoolean(MainActivity.LED_PREF_KEY, true);
         String priority = sharedPreferences.getString(MainActivity.PRIORITY_PREF_KEY, "def");
         int colorInt = sharedPreferences.getInt(MainActivity.COLOR_PICKER_PREF_KEY, -1);
-        Log.v(TAG, "Vibrate : " + String.valueOf(vibrate) + "\nRingtone: " + ring
+        Log.v(TAG, "Vibrate : " + vibrate + "\nRingtone: " + ring
                 + "\nColor: " + colorInt + "\nPriority : " + priority);
 
         //set the details, these only work for lower devices, Oreo and higher gets this from channel

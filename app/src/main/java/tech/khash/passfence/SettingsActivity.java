@@ -15,17 +15,18 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Switch;
+import android.widget.TextView;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.Switch;
-import android.widget.TextView;
 
 import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.OnColorSelectedListener;
@@ -34,7 +35,7 @@ import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
 /**
  * Created by Khashayar "Khash" Mortazavi
- *
+ * <p>
  * Main class responsible for the settings. As of now, it only controls the notification settings.
  * It uses a PreferenceFragmentCompact for devices API 25 and lower. For API 26 and above, all these
  * notification settings are controlled by the channel and can be changed in the system settings,
@@ -44,7 +45,7 @@ import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = SettingsActivity.class.getSimpleName();
-    static final String PACKAGE_NAME = "tech.khash.passfence";
+    private static final String PACKAGE_NAME = "tech.khash.passfence";
 
     //for showing the dialog for newer devices
     private static final String FIRST_TIME_DIALOG_PREF_KEY = "first_time_dialog_pref_key";
@@ -52,8 +53,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     //for activity results
     private static final int REQUEST_CODE_ALERT_RINGTONE = 1;
 
-    SharedPreferences sharedPreferences;
-    String currentRing;
+    private SharedPreferences sharedPreferences;
 
     //for tracking selected color change to update UI
     private boolean needsUpdate = false;
@@ -79,8 +79,6 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
             boolean ledBoolean = sharedPreferences.getBoolean(MainActivity.LED_PREF_KEY, true);
             buttonColorPicker.setActivated(ledBoolean);
         }//if - below oreo
-
-        currentRing = sharedPreferences.getString(MainActivity.RINGTONE_PREF_KEY, "");
     }//onCreate
 
     @Override
@@ -98,7 +96,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        Log.v(TAG, "onActivityResult called" +"\nRequest Code: " + requestCode + "\nResult Code: " + resultCode);
+        Log.v(TAG, "onActivityResult called" + "\nRequest Code: " + requestCode + "\nResult Code: " + resultCode);
         if (requestCode == REQUEST_CODE_ALERT_RINGTONE && data != null) {
             Uri ringtone = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
             if (ringtone != null) {
@@ -396,7 +394,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         }//getImportanceString
     }//getImportanceString
 
-    /*  Helper method for showing explanation dialog reagrding their notification channel. Only shows
+    /*  Helper method for showing explanation dialog regarding their notification channel. Only shows
         the first time they come to this page
         The call getNotificationChannel requires API 26, but we have already done that in onCreate, so we
         added SuppressLint for that reason */

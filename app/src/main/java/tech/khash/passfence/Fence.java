@@ -10,14 +10,14 @@ import java.util.Calendar;
 
 /**
  * Created by Khashayar "Khash" Mortazavi
- *
+ * <p>
  * Custom class for our Fence object.
- *
+ * <p>
  * This is our object that holds all the data for each location added by the user and holds
  * all the corresponding data such as ID (name), duration, expiry, criteria, etc
- *
+ * <p>
  * It has getters and setters and a public constructor.
- *
+ * <p>
  * It also creates Geofence object from the Fence object to be used for adding geofences
  */
 public class Fence {
@@ -34,16 +34,17 @@ public class Fence {
     public static final int FENCE_TYPE_EXIT = 2;
     public static final int FENCE_TYPE_ENTER_EXIT = 3;
 
-    public static final long HOUR_IN_MILLISEC = 3600000;
+    private static final long HOUR_IN_MILLISEC = 3600000;
 
     /**
      * Public constructor
-     * @param id : name of the Fence. Needs to be unique
-     * @param lat : latitude of the geofence
-     * @param lng : longitude of the geofence
-     * @param radius : radius of the geofence in meters
+     *
+     * @param id       : name of the Fence. Needs to be unique
+     * @param lat      : latitude of the geofence
+     * @param lng      : longitude of the geofence
+     * @param radius   : radius of the geofence in meters
      * @param duration : duration of the geofence input as hours
-     * @param type : criteria: ENTER, EXIT, or both
+     * @param type     : criteria: ENTER, EXIT, or both
      */
     public Fence(String id, double lat, double lng, float radius, long duration, int type) {
         this.id = id;
@@ -96,11 +97,7 @@ public class Fence {
         if (expiaryTimeMilliSec == -1) {
             return true;
         } else {
-            if (expiaryTimeMilliSec > Calendar.getInstance().getTimeInMillis()) {
-                return true;
-            } else {
-                return false;
-            }
+            return expiaryTimeMilliSec > Calendar.getInstance().getTimeInMillis();
         }
     }//isActive
 
@@ -111,7 +108,7 @@ public class Fence {
         String inputExpiry = getExpiry().trim();
         String expiry;
         if (inputExpiry.equalsIgnoreCase(App.getContext().getString(R.string.never))) {
-            expiry =  App.getContext().getString(R.string.expires_never);
+            expiry = App.getContext().getString(R.string.expires_never);
         } else if (inputExpiry.equalsIgnoreCase(App.getContext().getString(R.string.expired))) {
             expiry = App.getContext().getString(R.string.expired);
         } else {
@@ -129,7 +126,7 @@ public class Fence {
             return App.getContext().getString(R.string.expired);
         } else {
             final DateFormat dateFormat = new SimpleDateFormat("MMM.dd 'at' HH:mm");
-            return App.getContext().getString(R.string.expires_colon) + " "  +dateFormat.format(expiaryTimeMilliSec);
+            return App.getContext().getString(R.string.expires_colon) + " " + dateFormat.format(expiaryTimeMilliSec);
         }
     }//getExpiry
 
@@ -209,39 +206,9 @@ public class Fence {
             case FENCE_TYPE_EXIT:
                 return Geofence.GEOFENCE_TRANSITION_EXIT;
             case FENCE_TYPE_ENTER_EXIT:
-                default:
-                    return (Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT);
+            default:
+                return (Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT);
         }//switch
     }//getTransitionType
-
-
-    /**
-     * Setter methods
-     */
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setLatitude(double lat) {
-        this.latitude = lat;
-    }
-
-    public void setLongitude(double lng) {
-        this.longitude = lng;
-    }
-
-    public void setRadius(float radius) {
-        this.radius = radius;
-    }
-
-    public void setDuration(long duration) {
-        this.duration = duration;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
 
 }//Fence class

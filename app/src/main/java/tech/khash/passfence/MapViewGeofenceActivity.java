@@ -32,7 +32,7 @@ import java.util.ArrayList;
 
 /**
  * Created by Khashayar "Khash" Mortazavi
- *
+ * <p>
  * This is the class that hosts a Google Map fragment and shows the registered geofences on the map
  */
 
@@ -86,7 +86,6 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
     }//onMapReady
 
 
-
     //This gets called, when the circle is clicked and we will show the corresponding marker's info window
     @Override
     public void onCircleClick(Circle circle) {
@@ -131,6 +130,11 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
         return super.onOptionsItemSelected(item);
     }//onOptionsItemSelected
 
+
+    /*------------------------------------------------------------------------------------------
+                    ---------------    HELPER METHODS    ---------------
+    ------------------------------------------------------------------------------------------*/
+
     /* Helper method for adding locations to the map from the arrayList
        This method only gets called from onMapReady, so there is no need to check for null map */
     private void addGeofenceToMap() {
@@ -159,7 +163,6 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
             String name = fence.getId();
             LatLng latLng = fence.getLatLng();
             float radius = fence.getRadius();
-            long duration = fence.getDuration();
             String snippet = fence.getSnippet();
 
             //create the markeroption and marker
@@ -206,6 +209,7 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
 
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));//this is the pixel padding
     }//addGeofenceToMap
+
 
     /**
      * This class is for customizing Info Windows
@@ -263,10 +267,9 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
                 String type = properties[2];
 
                 String text = getString(R.string.id_colon) + " " + name;
-                String expires = expiry;
                 String criteria = getString(R.string.criteria_colon) + " " + type;
                 nameText.setText(text);
-                durationText.setText(expires);
+                durationText.setText(expiry);
                 criteriaText.setText(criteria);
             } catch (Exception e) {
                 Log.e(TAG, "Error getting snippet properties from marker + " + marker.getId(), e);
