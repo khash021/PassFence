@@ -94,6 +94,7 @@
     <string name="expired">Expired</string>
     <string name="enter_exit">Enter/Exit</string>
     <string name="error">Error</string>
+    <string name="expires_never">Never expires</string>
 
     <!--Map View-->
     <string name="no_geofence_show_toast">No registered locations</string>

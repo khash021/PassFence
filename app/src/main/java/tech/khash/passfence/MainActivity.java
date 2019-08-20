@@ -775,11 +775,10 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     //helper method for showing the dialog when the user long clicks on item
     private void showLongClickDialog(final Fence fence) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-//        String expiry = fence.getExpiary();
-        String expiry = getString(R.string.expired);
+        String expiry = fence.getExpiry();
         dialogBuilder.setTitle(fence.getId());
         //show re-activate if it is expired
-        String[] list = new String[3];
+        String[] list;
         if (expiry.equals(getString(R.string.expired))) {
             list = new String[]{getString(R.string.reactivate), getString(R.string.delete), getString(R.string.cancel)};
         } else {
@@ -791,7 +790,6 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
                 switch (index) {
                     case 0:
                         //reactivate
-                        //TODO: for now we are just sending them to the edit
                         Intent editIntent = new Intent(getApplicationContext(), AddGeofenceActivity.class);
                         editIntent.putExtra(FENCE_EDIT_EXTRA_INTENT, fence.getId());
                         //set the update boolean

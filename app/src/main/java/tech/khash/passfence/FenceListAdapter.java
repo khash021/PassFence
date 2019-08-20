@@ -1,12 +1,13 @@
 package tech.khash.passfence;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
@@ -79,10 +80,10 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
         //name
         holder.idTextView.setText(fence.getId());
         //active/expired
-        String activeText = (fence.isActive()) ? context.getString(R.string.active) : context.getString(R.string.inactive);
+        String activeText = (fence.isActive()) ? context.getString(R.string.active) : context.getString(R.string.expired);
         holder.activeTextView.setText(activeText);
         //expiry
-        String detail = context.getString(R.string.expires_colon) + " " + fence.getExpiary() +
+        String detail = context.getString(R.string.expires_colon) + " " + fence.getExpiry() +
                  " - " + context.getString(R.string.criteria_colon) + " " + fence.getStringType();
         holder.detailTextView.setText(detail);
     }//onBindViewHolder

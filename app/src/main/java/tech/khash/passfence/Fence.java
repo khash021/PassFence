@@ -108,12 +108,21 @@ public class Fence {
     //object from the marker/circle on map
     public String getSnippet() {
         String output;
-        output = id + "," + getExpiary().trim() + "," + getStringType();
+        String inputExpiry = getExpiry().trim();
+        String expiry;
+        if (inputExpiry.equalsIgnoreCase(App.getContext().getString(R.string.never))) {
+            expiry =  App.getContext().getString(R.string.expires_never);
+        } else if (inputExpiry.equalsIgnoreCase(App.getContext().getString(R.string.expired))) {
+            expiry = App.getContext().getString(R.string.expired);
+        } else {
+            expiry = inputExpiry;
+        }
+        output = id + "," + expiry + "," + getStringType();
         return output;
     }//getSnippet
 
     //It defines whether the fence is expired, never expires, or returns the date of expiry
-    public String getExpiary() {
+    public String getExpiry() {
         if (expiaryTimeMilliSec == -1) {
             return App.getContext().getString(R.string.never);
         } else if (Calendar.getInstance().getTimeInMillis() > expiaryTimeMilliSec) {
@@ -122,7 +131,7 @@ public class Fence {
             final DateFormat dateFormat = new SimpleDateFormat("MMM.dd 'at' HH:mm");
             return App.getContext().getString(R.string.expires_colon) + " "  +dateFormat.format(expiaryTimeMilliSec);
         }
-    }//getExpiary
+    }//getExpiry
 
     public String getStringType() {
         switch (type) {

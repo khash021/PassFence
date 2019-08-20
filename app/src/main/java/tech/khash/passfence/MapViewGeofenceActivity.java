@@ -2,8 +2,6 @@ package tech.khash.passfence;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -11,6 +9,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -262,7 +263,7 @@ public class MapViewGeofenceActivity extends AppCompatActivity implements OnMapR
                 String type = properties[2];
 
                 String text = getString(R.string.id_colon) + " " + name;
-                String expires = getString(R.string.expires_colon) + " " + expiry;
+                String expires = expiry;
                 String criteria = getString(R.string.criteria_colon) + " " + type;
                 nameText.setText(text);
                 durationText.setText(expires);
