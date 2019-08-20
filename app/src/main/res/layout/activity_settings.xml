@@ -20,10 +20,10 @@
 
     <Button
         android:id="@+id/button_color_picker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:text="@string/pick_blink_color"
-        android:layout_gravity="center_horizontal"/>
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        style="@style/button_style"/>
+
 
 </LinearLayout>

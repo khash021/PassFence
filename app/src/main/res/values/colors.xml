@@ -7,6 +7,7 @@
     <color name="colorPrimary">#ffc107</color>
     <color name="colorPrimaryDark">#c79100</color>
     <color name="colorAccent">#00796b</color>
+    <color name="buttonBackground">#ff4285f4</color>
 
     <!--colors for circles. using argb - first parameter is alpha-->
     <color name="circleStroke">#ff4285f4</color>
@@ -16,6 +17,7 @@
     <color name="notificationLight">#ffffff00</color>
 
     <color name="black">#000000</color>
+    <color name="white">#ffffff</color>
     <color name="blue_argb">#ff0000ff</color>
 
 </resources>

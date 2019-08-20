@@ -159,11 +159,8 @@
 
             <Button
                 android:id="@+id/button_add_geo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="6dp"
-                android:background="@drawable/button_background"
-                android:text="@string/add_geofence" />
+                android:text="@string/add_geofence"
+                style="@style/button_style" />
 
         </LinearLayout>
 
