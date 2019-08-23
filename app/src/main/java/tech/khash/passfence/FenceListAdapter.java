@@ -97,36 +97,36 @@ public class FenceListAdapter extends RecyclerView.Adapter<FenceListAdapter.Fenc
     }//getItemCount
 
 
-    //Inner class for the view holder
-    class FenceViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
-        //our views
-        final TextView idTextView, activeTextView, detailTextView;
-        final FenceListAdapter fenceListAdapter;
-        private Context context;
+        //Inner class for the view holder
+        class FenceViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
+            //our views
+            final TextView idTextView, activeTextView, detailTextView;
+            final FenceListAdapter fenceListAdapter;
+            private Context context;
 
-        //constructor
-        private FenceViewHolder(View itemView, FenceListAdapter adapter, Context context) {
-            super(itemView);
-            this.context = context;
-            //find view
-            idTextView = itemView.findViewById(R.id.list_text_id);
-            activeTextView = itemView.findViewById(R.id.list_text_active);
-            detailTextView = itemView.findViewById(R.id.list_text_detail);
-            //adapter
-            this.fenceListAdapter = adapter;
-            //for click listener
-            itemView.setOnLongClickListener(this);
+            //constructor
+            private FenceViewHolder(View itemView, FenceListAdapter adapter, Context context) {
+                super(itemView);
+                this.context = context;
+                //find view
+                idTextView = itemView.findViewById(R.id.list_text_id);
+                activeTextView = itemView.findViewById(R.id.list_text_active);
+                detailTextView = itemView.findViewById(R.id.list_text_detail);
+                //adapter
+                this.fenceListAdapter = adapter;
+                //for click listener
+                itemView.setOnLongClickListener(this);
+            }//FenceViewHolder
+
+            @Override
+            public boolean onLongClick(View v) {
+                //get the index of the item
+                int position = getLayoutPosition();
+                itemLongClickListener.onListItemLongClick(position);
+                //true if the callback consumed the long click, false otherwise.
+                return true;
+            }//onLongClick
         }//FenceViewHolder
-
-        @Override
-        public boolean onLongClick(View v) {
-            //get the index of the item
-            int position = getLayoutPosition();
-            itemLongClickListener.onListItemLongClick(position);
-            //true if the callback consumed the long click, false otherwise.
-            return true;
-        }//onLongClick
-    }//FenceViewHolder
 }//FenceListAdapter-class
 
 

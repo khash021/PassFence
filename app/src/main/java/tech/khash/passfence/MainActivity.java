@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
     public static final String LED_PREF_KEY = "notification_led_key";
     public static final String PRIORITY_PREF_KEY = "notification_priority_key";
     public static final String COLOR_PICKER_PREF_KEY = "notification_color_picker_key";
+    public static final String PREF_KEY_FIRST_TIME_LOCATION = "pref_key_first_time_location";
 
     //Notification channels for Android 8 and higher
     public final static String CHANNEL_ID = "Notification Settings";
@@ -581,28 +582,48 @@ public class MainActivity extends AppCompatActivity implements FenceListAdapter.
             @Override
             public void onClick(DialogInterface dialog, int id) {
 
-                //first check to see if the user has denied permission before
-                if (ContextCompat.checkSelfPermission(context,
-                        android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
-                    //here we check to see if they have selected "never ask again". If that is the case, then
-                    // shouldShowRequestPermissionRationale will return false. If that is false, and
-                    //the build version is higher than 23 (that feature is only available to >= 23
-                    //then send them to the
-                    if (Build.VERSION.SDK_INT >= 23 && !(activity.shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
-                        //This is the case when the user checked the box, so we send them to the settings
-                        openPermissionSettings(activity);
-                    } else {
+                /*  We need to differentiate if it is the first time we are asking or not
+                    If it is, we just ask permission,
+                    If it is not, then we will check rationale (it returns false the very first time
+                 */
+                SharedPreferences sharedPreferences = android.preference.PreferenceManager.getDefaultSharedPreferences(context);
+                boolean firstTime = sharedPreferences.getBoolean(PREF_KEY_FIRST_TIME_LOCATION, true);
+                if (firstTime) {
+                    //we dont need to check rationale, just ask
+                    if (ContextCompat.checkSelfPermission(context,
+                            android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
                         ActivityCompat.requestPermissions(activity,
                                 new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                                 LOCATION_PERMISSION_REQUEST_CODE);
-                    }
+                        //set the boolean to false, we only run this the very first time
+                        sharedPreferences.edit().putBoolean(PREF_KEY_FIRST_TIME_LOCATION, false).apply();
+                    }//need permission
                 } else {
-                    //this is the case that the user has never denied permission, so we ask for it
-                    ActivityCompat.requestPermissions(activity,
-                            new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                            LOCATION_PERMISSION_REQUEST_CODE);
-                }
+                    //this is not the first time anymore, so we check rationale
+                    if (ContextCompat.checkSelfPermission(context,
+                            android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
+                        /*
+                        Here we check to see if they have selected "never ask again". If that is the
+                        case, then shouldShowRequestPermissionRationale will return false. If that
+                        is false, and the build version is higher than 23 (that feature is only
+                        available to >= 23 then send them to the
+                         */
+                        if (Build.VERSION.SDK_INT >= 23 && !(activity.shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
+                            //This is the case when the user checked the box, so we send them to the settings
+                            openPermissionSettings(activity);
+                        } else {
+                            ActivityCompat.requestPermissions(activity,
+                                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                                    LOCATION_PERMISSION_REQUEST_CODE);
+                        }
 
+                    } else {
+                        //this is the case that the user has never denied permission, so we ask for it
+                        ActivityCompat.requestPermissions(activity,
+                                new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                                LOCATION_PERMISSION_REQUEST_CODE);
+                    }//if-else build version
+                }//if-else first time
             }
         });
         builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {

@@ -34,7 +34,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio%203.4.2/plugins/android/lib/android.jar!/images/material_design_icons/action/ic_info_black_24dp.xml" />
+                                                <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio%203.4.2/plugins/android/lib/android.jar!/images/material_design_icons/maps/ic_add_location_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -44,7 +44,8 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="outputName" value="ic_about_black" />
+                                      <entry key="outputName" value="ic_add_location_white" />
+                                      <entry key="theme" value="HOLO_DARK" />
                                       <entry key="themeColor" value="ffffff" />
                                     </map>
                                   </option>
@@ -114,6 +115,7 @@
                                       <entry key="assetType" value="IMAGE" />
                                       <entry key="iconShape" value="NONE" />
                                       <entry key="imageAsset" value="C:\Users\Khashayar\Git\PassFence\Icon\Logo02.png" />
+                                      <entry key="outputName" value="ic_add_location_white" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -144,7 +146,7 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputIconType" value="LAUNCHER_LEGACY" />
+                            <entry key="outputIconType" value="ACTIONBAR" />
                           </map>
                         </option>
                       </PersistentState>
